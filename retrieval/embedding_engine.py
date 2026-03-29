@@ -47,6 +47,11 @@ class EmbeddingEngine:
             )
         
         try:
+            # Set HuggingFace token if available (suppresses auth warnings)
+            hf_token = os.environ.get('HF_TOKEN') or os.environ.get('HUGGING_FACE_HUB_TOKEN')
+            if hf_token:
+                os.environ['HUGGING_FACE_HUB_TOKEN'] = hf_token
+            
             # Load model from local path with offline mode
             self.model = SentenceTransformer(model_path, device='cpu')
             self.model_path = model_path

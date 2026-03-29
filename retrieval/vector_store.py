@@ -58,12 +58,18 @@ class VectorStore:
         os.makedirs(persist_directory, exist_ok=True)
         
         # Initialize ChromaDB client with persistence
+        # Disable telemetry completely to avoid PostHog errors
+        settings = Settings(
+            anonymized_telemetry=False,
+            allow_reset=True,
+            # Additional telemetry disabling
+            chroma_telemetry_impl="chromadb.telemetry.posthog.Posthog",
+            chroma_telemetry_enabled=False
+        )
+        
         self.client = chromadb.PersistentClient(
             path=persist_directory,
-            settings=Settings(
-                anonymized_telemetry=False,  # Disable telemetry for offline operation
-                allow_reset=True
-            )
+            settings=settings
         )
         
         # Track loaded collections

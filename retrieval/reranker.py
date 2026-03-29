@@ -9,6 +9,7 @@ benchmarks by providing more accurate relevance scores than initial retrieval.
 """
 
 import logging
+import os
 from typing import List, Dict, Tuple
 import numpy as np
 
@@ -51,6 +52,12 @@ class Reranker:
             )
         
         try:
+            # Set HuggingFace token if available (suppresses auth warnings)
+            hf_token = os.environ.get('HF_TOKEN') or os.environ.get('HUGGING_FACE_HUB_TOKEN')
+            if hf_token:
+                os.environ['HUGGING_FACE_HUB_TOKEN'] = hf_token
+                logger.debug("Using HuggingFace token for model downloads")
+            
             # Load cross-encoder model
             self.model = CrossEncoder(model_path, device='cpu')
             self.model_path = model_path
