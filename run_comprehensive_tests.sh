@@ -631,7 +631,7 @@ echo ""
 # Test 7: Empty Policy
 echo -e "${YELLOW}Test 4.1: Empty Policy (Edge Case)${NC}"
 TESTS_RUN=$((TESTS_RUN + 1))
-if run_analysis "$POLICIES_DIR/empty_policy.md" "isms" "empty_policy" 2>/dev/null || true; then
+if run_analysis "$POLICIES_DIR/empty_policy.md" "isms" "empty_policy" 2>/dev/null; then
     TESTS_PASSED=$((TESTS_PASSED + 1))
     log_test "Empty Policy" "✅ PASSED" "Handled gracefully"
 else
