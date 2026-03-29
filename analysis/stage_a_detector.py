@@ -52,10 +52,12 @@ class StageADetector:
     """
     
     # Coverage status thresholds
-    COVERED_THRESHOLD = 0.8
-    PARTIAL_UPPER_THRESHOLD = 0.8
-    PARTIAL_LOWER_THRESHOLD = 0.5
-    MISSING_THRESHOLD = 0.3
+    # Adjusted from 0.8/0.5/0.3 to 0.65/0.45/0.25 for better balance
+    # between precision and recall. 65% is industry standard for semantic similarity.
+    COVERED_THRESHOLD = 0.65        # > 65% confidence = covered (was 0.8)
+    PARTIAL_UPPER_THRESHOLD = 0.65  # Upper bound for partial coverage
+    PARTIAL_LOWER_THRESHOLD = 0.45  # 45-65% = partially covered (was 0.5)
+    MISSING_THRESHOLD = 0.25        # < 25% = missing (was 0.3)
     
     def __init__(
         self,

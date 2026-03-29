@@ -61,10 +61,7 @@ class VectorStore:
         # Disable telemetry completely to avoid PostHog errors
         settings = Settings(
             anonymized_telemetry=False,
-            allow_reset=True,
-            # Additional telemetry disabling
-            chroma_telemetry_impl="chromadb.telemetry.posthog.Posthog",
-            chroma_telemetry_enabled=False
+            allow_reset=True
         )
         
         self.client = chromadb.PersistentClient(
