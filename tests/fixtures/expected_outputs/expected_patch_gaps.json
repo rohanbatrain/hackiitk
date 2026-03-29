@@ -1,0 +1,124 @@
+{
+  "policy_name": "Patch Management Policy",
+  "policy_file": "patch_policy.md",
+  "expected_gaps": [
+    {
+      "subcategory_id": "ID.RA-01",
+      "function": "Identify",
+      "category": "Risk Assessment",
+      "description": "Asset vulnerabilities are identified and documented",
+      "severity": "Critical",
+      "reason": "Policy does not address systematic vulnerability identification beyond patch availability",
+      "evidence": "No vulnerability scanning, assessment, or documentation processes mentioned"
+    },
+    {
+      "subcategory_id": "ID.RA-02",
+      "function": "Identify",
+      "category": "Risk Assessment",
+      "description": "Cyber threat intelligence is received from information sharing forums and sources",
+      "severity": "High",
+      "reason": "Policy mentions threat intelligence sources but lacks formal threat intelligence program",
+      "evidence": "Section 4.1 mentions 'industry threat intelligence sources' but no formal threat intelligence integration or analysis"
+    },
+    {
+      "subcategory_id": "ID.RA-03",
+      "function": "Identify",
+      "category": "Risk Assessment",
+      "description": "Internal and external threats to the organization are identified and documented",
+      "severity": "High",
+      "reason": "Policy does not address comprehensive threat identification beyond patch-related vulnerabilities",
+      "evidence": "No threat modeling, threat actor analysis, or threat documentation mentioned"
+    },
+    {
+      "subcategory_id": "ID.RA-04",
+      "function": "Identify",
+      "category": "Risk Assessment",
+      "description": "Potential business impacts and likelihoods are identified",
+      "severity": "High",
+      "reason": "Policy mentions impact analysis but lacks formal business impact assessment",
+      "evidence": "Section 4.2 mentions 'potential impact on business operations' but no BIA methodology or likelihood assessment"
+    },
+    {
+      "subcategory_id": "ID.RA-05",
+      "function": "Identify",
+      "category": "Risk Assessment",
+      "description": "Threats, vulnerabilities, likelihoods, and impacts are used to understand inherent risk and inform risk response decisions",
+      "severity": "High",
+      "reason": "Policy does not integrate threat, vulnerability, and impact data into comprehensive risk assessment",
+      "evidence": "No risk calculation methodology or risk-based decision framework described"
+    },
+    {
+      "subcategory_id": "ID.RA-06",
+      "function": "Identify",
+      "category": "Risk Assessment",
+      "description": "Risk responses are identified, prioritized, planned, tracked, and communicated",
+      "severity": "Medium",
+      "reason": "Policy addresses patch prioritization but lacks comprehensive risk response management",
+      "evidence": "Patch prioritization exists but no broader risk response tracking or communication framework"
+    },
+    {
+      "subcategory_id": "PR.PS-01",
+      "function": "Protect",
+      "category": "Protective Technology",
+      "description": "Configuration management practices are established and applied",
+      "severity": "High",
+      "reason": "Policy does not address configuration management beyond patch deployment",
+      "evidence": "No configuration baselines, configuration control, or configuration auditing mentioned"
+    },
+    {
+      "subcategory_id": "PR.PS-02",
+      "function": "Protect",
+      "category": "Protective Technology",
+      "description": "Software is maintained, replaced, and removed commensurate with risk",
+      "severity": "Medium",
+      "reason": "Policy focuses on patching but does not address software lifecycle management",
+      "evidence": "No software inventory, end-of-life management, or risk-based software removal processes"
+    },
+    {
+      "subcategory_id": "PR.PS-03",
+      "function": "Protect",
+      "category": "Protective Technology",
+      "description": "Hardware is maintained, replaced, and removed commensurate with risk",
+      "severity": "Medium",
+      "reason": "Policy does not address hardware lifecycle or firmware management comprehensively",
+      "evidence": "Section 2 mentions firmware updates but no hardware lifecycle or secure disposal processes"
+    },
+    {
+      "subcategory_id": "PR.PS-04",
+      "function": "Protect",
+      "category": "Protective Technology",
+      "description": "Log records are generated and made available for continuous monitoring",
+      "severity": "High",
+      "reason": "Policy does not address logging requirements for patch management activities",
+      "evidence": "Section 6.5 mentions documentation but no logging, SIEM integration, or continuous monitoring"
+    },
+    {
+      "subcategory_id": "PR.PS-05",
+      "function": "Protect",
+      "category": "Protective Technology",
+      "description": "Installation and execution of unauthorized software are prevented",
+      "severity": "High",
+      "reason": "Policy does not address application whitelisting or unauthorized software prevention",
+      "evidence": "No application control, whitelisting, or unauthorized software detection mentioned"
+    },
+    {
+      "subcategory_id": "PR.PS-06",
+      "function": "Protect",
+      "category": "Protective Technology",
+      "description": "Secure software development practices are integrated, and their performance is monitored throughout the software development life cycle",
+      "severity": "Low",
+      "reason": "Policy does not address secure development practices (out of scope for patch management but relevant for custom tools)",
+      "evidence": "No secure development lifecycle or code security practices mentioned"
+    }
+  ],
+  "total_planted_gaps": 12,
+  "minimum_required_detection": 10,
+  "detection_threshold_percentage": 80,
+  "notes": [
+    "The Patch Management policy intentionally omits ID.RA (Risk Assessment) subcategories beyond basic patch risk assessment",
+    "The policy also omits PR.PS (Protective Technology) subcategories beyond patch deployment",
+    "The policy focuses narrowly on patch deployment without addressing broader vulnerability management and protective technology requirements",
+    "At least 10 out of 12 gaps (83.3%) must be detected to pass validation",
+    "Note: PR.PS-06 (secure development) may be considered lower priority for patch management policy"
+  ]
+}

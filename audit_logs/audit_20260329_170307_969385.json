@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-29T17:03:07.969385",
+  "input_file_path": "comprehensive_test_20260329_162554/policies/patch_management.md",
+  "input_file_hash": "39594e8252e5422cc629f1ca580b9c17cb389fbc6b04ce7c083e5423c9672594",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "outputs/patch_management_20260329_170307",
+  "analysis_duration_seconds": 84.16091537475586
+}

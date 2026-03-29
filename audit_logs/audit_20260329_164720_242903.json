@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-29T16:47:20.242903",
+  "input_file_path": "comprehensive_test_20260329_162554/policies/partial_isms.md",
+  "input_file_hash": "6ba098f8c80d512e08f3deb9b28dcc07d0cf347b92c24c7eb1c404081f92305d",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "outputs/partial_isms_20260329_164720",
+  "analysis_duration_seconds": 705.5291986465454
+}

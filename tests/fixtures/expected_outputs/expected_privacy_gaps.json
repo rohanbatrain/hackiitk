@@ -1,0 +1,124 @@
+{
+  "policy_name": "Data Privacy Policy",
+  "policy_file": "privacy_policy.md",
+  "expected_gaps": [
+    {
+      "subcategory_id": "PR.AA-01",
+      "function": "Protect",
+      "category": "Identity Management, Authentication and Access Control",
+      "description": "Identities and credentials are issued, managed, verified, revoked, and audited for authorized devices, users, and processes",
+      "severity": "Critical",
+      "reason": "Policy does not address identity lifecycle management or credential management processes",
+      "evidence": "No mention of identity provisioning, credential issuance, or access credential management"
+    },
+    {
+      "subcategory_id": "PR.AA-02",
+      "function": "Protect",
+      "category": "Identity Management, Authentication and Access Control",
+      "description": "Identities are proofed and bound to credentials and asserted in interactions",
+      "severity": "High",
+      "reason": "Policy lacks identity proofing and credential binding requirements",
+      "evidence": "No identity verification or authentication credential binding described"
+    },
+    {
+      "subcategory_id": "PR.AA-03",
+      "function": "Protect",
+      "category": "Identity Management, Authentication and Access Control",
+      "description": "Users, devices, and other assets are authenticated",
+      "severity": "Critical",
+      "reason": "Policy does not specify authentication requirements or mechanisms",
+      "evidence": "No authentication methods, multi-factor authentication, or device authentication mentioned"
+    },
+    {
+      "subcategory_id": "PR.AA-04",
+      "function": "Protect",
+      "category": "Identity Management, Authentication and Access Control",
+      "description": "Identity assertions are protected, conveyed, and verified",
+      "severity": "High",
+      "reason": "Policy lacks requirements for protecting and verifying identity assertions",
+      "evidence": "No identity assertion protection or verification processes described"
+    },
+    {
+      "subcategory_id": "PR.AA-05",
+      "function": "Protect",
+      "category": "Identity Management, Authentication and Access Control",
+      "description": "Access permissions, entitlements, and authorizations are defined in a policy, managed, enforced, and reviewed, and incorporate the principles of least privilege and separation of duties",
+      "severity": "High",
+      "reason": "Policy mentions access but does not detail authorization management or least privilege enforcement",
+      "evidence": "Section 8.1 mentions security measures generically but lacks specific access control implementation"
+    },
+    {
+      "subcategory_id": "PR.AA-06",
+      "function": "Protect",
+      "category": "Identity Management, Authentication and Access Control",
+      "description": "Physical access to assets is managed and protected",
+      "severity": "Medium",
+      "reason": "Policy does not address physical access controls for data storage or processing facilities",
+      "evidence": "No physical security or facility access controls mentioned"
+    },
+    {
+      "subcategory_id": "PR.DS-01",
+      "function": "Protect",
+      "category": "Data Security",
+      "description": "Data-at-rest is protected",
+      "severity": "Critical",
+      "reason": "Policy mentions encryption generically but lacks specific data-at-rest protection requirements",
+      "evidence": "Section 8.1 mentions 'encryption of data at rest' but provides no implementation details, key management, or encryption standards"
+    },
+    {
+      "subcategory_id": "PR.DS-02",
+      "function": "Protect",
+      "category": "Data Security",
+      "description": "Data-in-transit is protected",
+      "severity": "Critical",
+      "reason": "Policy mentions encryption in transit but lacks specific protocols and requirements",
+      "evidence": "Section 8.1 mentions 'encryption of data in transit' but no TLS/SSL requirements, protocol versions, or cipher suites specified"
+    },
+    {
+      "subcategory_id": "PR.DS-05",
+      "function": "Protect",
+      "category": "Data Security",
+      "description": "Protections against data leaks are implemented",
+      "severity": "High",
+      "reason": "Policy does not address data loss prevention or data leakage protection mechanisms",
+      "evidence": "No DLP, data exfiltration prevention, or leakage detection mentioned"
+    },
+    {
+      "subcategory_id": "PR.DS-08",
+      "function": "Protect",
+      "category": "Data Security",
+      "description": "Integrity checking mechanisms are used to verify hardware integrity",
+      "severity": "Medium",
+      "reason": "Policy does not address hardware integrity verification or secure boot",
+      "evidence": "No hardware integrity, TPM, or secure boot requirements mentioned"
+    },
+    {
+      "subcategory_id": "PR.DS-10",
+      "function": "Protect",
+      "category": "Data Security",
+      "description": "The confidentiality, integrity, and availability of data-in-use are protected",
+      "severity": "High",
+      "reason": "Policy does not address protection of data during processing or in-memory",
+      "evidence": "No data-in-use protection, memory encryption, or secure enclaves mentioned"
+    },
+    {
+      "subcategory_id": "PR.DS-11",
+      "function": "Protect",
+      "category": "Data Security",
+      "description": "Backups of data are created, protected, maintained, and tested",
+      "severity": "High",
+      "reason": "Policy does not address backup requirements, protection, or testing",
+      "evidence": "No backup strategy, backup encryption, or recovery testing mentioned"
+    }
+  ],
+  "total_planted_gaps": 12,
+  "minimum_required_detection": 10,
+  "detection_threshold_percentage": 80,
+  "notes": [
+    "The Data Privacy policy intentionally omits PR.AA (Identity Management and Access Control) implementation details",
+    "The policy also omits PR.DS (Data Security) technical controls and implementation requirements",
+    "While the policy mentions encryption and access controls at a high level, it lacks the specific technical requirements that NIST CSF expects",
+    "At least 10 out of 12 gaps (83.3%) must be detected to pass validation",
+    "Note: The policy correctly addresses data privacy principles but fails on cybersecurity technical controls"
+  ]
+}

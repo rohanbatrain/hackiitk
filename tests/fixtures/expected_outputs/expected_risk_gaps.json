@@ -1,0 +1,125 @@
+{
+  "policy_name": "Risk Management Policy",
+  "policy_file": "risk_policy.md",
+  "expected_gaps": [
+    {
+      "subcategory_id": "GV.RM-01",
+      "function": "Govern",
+      "category": "Risk Management Strategy",
+      "description": "Risk management objectives are established and agreed to by organizational stakeholders",
+      "severity": "High",
+      "reason": "Policy does not explicitly document risk management objectives agreed to by stakeholders",
+      "evidence": "Section 1 states purpose but lacks formal documented objectives with stakeholder agreement"
+    },
+    {
+      "subcategory_id": "GV.RM-02",
+      "function": "Govern",
+      "category": "Risk Management Strategy",
+      "description": "Risk appetite and risk tolerance statements are established, communicated, and maintained",
+      "severity": "High",
+      "reason": "Policy mentions risk appetite in Section 6.3 but lacks formal documented risk tolerance statements",
+      "evidence": "Section 6.3 describes risk appetite categories but no quantitative risk tolerance thresholds or formal statements"
+    },
+    {
+      "subcategory_id": "GV.RM-03",
+      "function": "Govern",
+      "category": "Risk Management Strategy",
+      "description": "Cybersecurity risk management activities and outcomes are included in enterprise risk management processes",
+      "severity": "Critical",
+      "reason": "Policy does not explicitly integrate cybersecurity risk into enterprise risk management",
+      "evidence": "No mention of cybersecurity-specific risk management or integration with ERM framework"
+    },
+    {
+      "subcategory_id": "GV.RM-04",
+      "function": "Govern",
+      "category": "Risk Management Strategy",
+      "description": "Strategic direction that describes appropriate risk response options is established and communicated",
+      "severity": "Medium",
+      "reason": "Policy describes risk treatment options but lacks strategic direction on when to use each option",
+      "evidence": "Section 7.1 lists risk treatment options but no strategic guidance on selection criteria"
+    },
+    {
+      "subcategory_id": "GV.RM-05",
+      "function": "Govern",
+      "category": "Risk Management Strategy",
+      "description": "Lines of communication across the organization are established for cybersecurity risks, including risks from suppliers and other third parties",
+      "severity": "High",
+      "reason": "Policy addresses general risk communication but not cybersecurity-specific communication channels",
+      "evidence": "Section 9 covers risk communication but no cybersecurity-specific escalation paths or CISO involvement"
+    },
+    {
+      "subcategory_id": "GV.RM-06",
+      "function": "Govern",
+      "category": "Risk Management Strategy",
+      "description": "A standardized method for calculating, documenting, categorizing, and prioritizing cybersecurity risks is established and communicated",
+      "severity": "Critical",
+      "reason": "Policy provides general risk calculation but lacks cybersecurity-specific risk methodology",
+      "evidence": "Section 6.1 has generic likelihood/impact but no cybersecurity threat modeling or attack vector analysis"
+    },
+    {
+      "subcategory_id": "GV.RM-07",
+      "function": "Govern",
+      "category": "Risk Management Strategy",
+      "description": "Strategic opportunities (i.e., positive risks) are characterized and are included in organizational cybersecurity risk discussions",
+      "severity": "Low",
+      "reason": "Policy focuses on negative risks and does not address positive risks or opportunities",
+      "evidence": "No mention of positive risks, opportunities, or risk-taking for innovation"
+    },
+    {
+      "subcategory_id": "ID.AM-01",
+      "function": "Identify",
+      "category": "Asset Management",
+      "description": "Inventories of hardware managed by the organization are maintained",
+      "severity": "High",
+      "reason": "Policy does not address asset inventory or hardware asset management",
+      "evidence": "No asset inventory, asset register, or hardware tracking mentioned"
+    },
+    {
+      "subcategory_id": "ID.AM-02",
+      "function": "Identify",
+      "category": "Asset Management",
+      "description": "Inventories of software, services, and systems managed by the organization are maintained",
+      "severity": "High",
+      "reason": "Policy does not address software or system inventory management",
+      "evidence": "No software inventory, application catalog, or system register mentioned"
+    },
+    {
+      "subcategory_id": "ID.AM-03",
+      "function": "Identify",
+      "category": "Asset Management",
+      "description": "Representations of the organization's authorized network communication and internal and external network data flows are maintained",
+      "severity": "Medium",
+      "reason": "Policy does not address network architecture documentation or data flow mapping",
+      "evidence": "No network diagrams, data flow documentation, or communication mapping mentioned"
+    },
+    {
+      "subcategory_id": "ID.AM-04",
+      "function": "Identify",
+      "category": "Asset Management",
+      "description": "Inventories of services provided by suppliers are maintained",
+      "severity": "High",
+      "reason": "Policy mentions third-party risk but lacks supplier service inventory",
+      "evidence": "Section 10 addresses third-party risk but no supplier service catalog or inventory"
+    },
+    {
+      "subcategory_id": "ID.AM-05",
+      "function": "Identify",
+      "category": "Asset Management",
+      "description": "Assets are prioritized based on classification, criticality, resources, and impact on the mission",
+      "severity": "High",
+      "reason": "Policy does not address asset classification or criticality-based prioritization",
+      "evidence": "No asset classification scheme, criticality ratings, or mission-impact analysis"
+    }
+  ],
+  "total_planted_gaps": 12,
+  "minimum_required_detection": 10,
+  "detection_threshold_percentage": 80,
+  "notes": [
+    "The Risk Management policy intentionally omits GV.RM (Risk Management Strategy) cybersecurity-specific requirements",
+    "The policy also completely omits ID.AM (Asset Management) subcategories",
+    "While the policy covers general enterprise risk management, it fails to address cybersecurity-specific risk management requirements",
+    "The policy does not integrate asset management, which is foundational for risk assessment",
+    "At least 10 out of 12 gaps (83.3%) must be detected to pass validation",
+    "Note: GV.RM-03 and GV.RM-06 are critical gaps that should definitely be detected"
+  ]
+}

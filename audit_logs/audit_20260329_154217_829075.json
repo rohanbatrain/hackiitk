@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-29T15:42:17.829075",
+  "input_file_path": "test_gap_detection_20260329_150502/incomplete_policy.md",
+  "input_file_hash": "2c52b77bf5fcaa02eab29f6b26cdf6e40496a1db1435a1d7a5655cf2d1ae9b20",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "outputs/incomplete_policy_20260329_154217",
+  "analysis_duration_seconds": 579.9804930686951
+}

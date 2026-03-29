@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-29T17:01:39.580521",
+  "input_file_path": "comprehensive_test_20260329_162554/policies/risk_management.md",
+  "input_file_hash": "5e4caf97e02ffc4952b138bc6bf718394d0334b59bfb7edee6c6ac4a80645c5d",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "outputs/risk_management_20260329_170139",
+  "analysis_duration_seconds": 157.36955285072327
+}

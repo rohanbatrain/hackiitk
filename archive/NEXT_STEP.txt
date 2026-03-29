@@ -1,0 +1,95 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║   ⚠️  ACTION REQUIRED: Python Version Issue                 ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+PROBLEM:
+  You're using Python 3.14.3
+  ChromaDB requires Python < 3.14 (Pydantic v1 compatibility)
+
+SOLUTION:
+  Use Python 3.12 instead
+
+═══════════════════════════════════════════════════════════════
+  QUICK FIX (Run This)
+═══════════════════════════════════════════════════════════════
+
+    ./setup_python312.sh
+
+This will:
+  1. Install Python 3.12 (if needed)
+  2. Create new venv with Python 3.12
+  3. Install all dependencies
+  4. Download embedding model
+  5. Set everything up correctly
+
+═══════════════════════════════════════════════════════════════
+  THEN USE THE TOOL
+═══════════════════════════════════════════════════════════════
+
+    source venv312/bin/activate
+    
+    ./pa --policy-path your_policy.pdf --domain isms
+
+═══════════════════════════════════════════════════════════════
+  ABOUT YOUR DATA DIRECTORY QUESTION
+═══════════════════════════════════════════════════════════════
+
+Q: Should the catalog be built from all MD/PDF files in data/?
+
+A: NO! Here's why:
+
+  ┌─────────────────────────────────────────────────┐
+  │  data/reference_catalog.json                    │
+  │  = NIST CSF 2.0 Framework (49 controls)         │
+  │  = The STANDARD to compare against              │
+  │  ✓ Already correct - don't rebuild              │
+  └─────────────────────────────────────────────────┘
+                      ↓
+                  COMPARES
+                      ↓
+  ┌─────────────────────────────────────────────────┐
+  │  data/policies/*.md (37 files)                  │
+  │  = Your policy TEMPLATES                        │
+  │  = Documents to be ANALYZED                     │
+  │  = INPUT to the analyzer                        │
+  └─────────────────────────────────────────────────┘
+                      ↓
+                  PRODUCES
+                      ↓
+  ┌─────────────────────────────────────────────────┐
+  │  Gap Analysis Report                            │
+  │  = What's missing from your policies            │
+  │  = Recommendations for improvement              │
+  └─────────────────────────────────────────────────┘
+
+The catalog contains the FRAMEWORK (49 NIST CSF controls).
+Your policy files are ANALYZED against that framework.
+
+═══════════════════════════════════════════════════════════════
+  WHAT WE FIXED TODAY
+═══════════════════════════════════════════════════════════════
+
+  ✓ Fixed catalog loading bug
+  ✓ Downloaded embedding model
+  ✓ Created wrapper script (pa)
+  ✓ Clarified catalog vs policy documents
+  ⚠️ Need Python 3.12 for ChromaDB
+
+═══════════════════════════════════════════════════════════════
+  FILES CREATED
+═══════════════════════════════════════════════════════════════
+
+  setup_python312.sh         - Setup script for Python 3.12
+  PYTHON_VERSION_ISSUE.md    - Detailed explanation
+  CURRENT_STATUS.md          - Complete status report
+  NEXT_STEP.txt              - This file
+
+═══════════════════════════════════════════════════════════════
+  RUN THIS NOW
+═══════════════════════════════════════════════════════════════
+
+    ./setup_python312.sh
+
+Then you'll be ready to analyze policies! 🚀

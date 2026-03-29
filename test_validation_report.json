@@ -1,0 +1,67 @@
+{
+  "test_date": "2026-03-28T13:38:14.999166",
+  "policy_tests": {
+    "ISMS Policy Analysis": {
+      "status": "failed",
+      "test_file": "tests/integration/test_isms_policy.py",
+      "details": {
+        "tests_run": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": [
+          "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]"
+        ]
+      },
+      "output_summary": "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]\npython -m pytest: error: unrecognized arguments: --json-report --json-report-file=test_report.json\n  inifile: /Users/rohan/Documents/HACKIITK/pyproject.toml\n  rootdir: /Users/rohan/Documents/HACKIITK\n\n"
+    },
+    "Data Privacy Policy Analysis": {
+      "status": "failed",
+      "test_file": "tests/integration/test_privacy_policy.py",
+      "details": {
+        "tests_run": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": [
+          "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]"
+        ]
+      },
+      "output_summary": "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]\npython -m pytest: error: unrecognized arguments: --json-report --json-report-file=test_report.json\n  inifile: /Users/rohan/Documents/HACKIITK/pyproject.toml\n  rootdir: /Users/rohan/Documents/HACKIITK\n\n"
+    },
+    "Patch Management Policy Analysis": {
+      "status": "failed",
+      "test_file": "tests/integration/test_patch_policy.py",
+      "details": {
+        "tests_run": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": [
+          "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]"
+        ]
+      },
+      "output_summary": "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]\npython -m pytest: error: unrecognized arguments: --json-report --json-report-file=test_report.json\n  inifile: /Users/rohan/Documents/HACKIITK/pyproject.toml\n  rootdir: /Users/rohan/Documents/HACKIITK\n\n"
+    },
+    "Risk Management Policy Analysis": {
+      "status": "failed",
+      "test_file": "tests/integration/test_risk_policy.py",
+      "details": {
+        "tests_run": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": [
+          "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]"
+        ]
+      },
+      "output_summary": "ERROR: usage: python -m pytest [options] [file_or_dir] [file_or_dir] [...]\npython -m pytest: error: unrecognized arguments: --json-report --json-report-file=test_report.json\n  inifile: /Users/rohan/Documents/HACKIITK/pyproject.toml\n  rootdir: /Users/rohan/Documents/HACKIITK\n\n"
+    }
+  },
+  "summary": {
+    "total_tests": 4,
+    "passed": 0,
+    "failed": 4,
+    "skipped": 0
+  }
+}

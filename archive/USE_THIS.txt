@@ -1,0 +1,100 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║   🎉 YOUR POLICY ANALYZER IS READY TO USE! 🎉               ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────┐
+│  STEP 1: Activate Virtual Environment                        │
+└──────────────────────────────────────────────────────────────┘
+
+    source venv/bin/activate
+
+
+┌──────────────────────────────────────────────────────────────┐
+│  STEP 2: Run Analysis                                        │
+└──────────────────────────────────────────────────────────────┘
+
+    ./pa --policy-path your_policy.pdf --domain isms
+
+
+┌──────────────────────────────────────────────────────────────┐
+│  THAT'S IT! ✓                                                │
+└──────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════
+  TRY IT NOW WITH A TEST POLICY
+═══════════════════════════════════════════════════════════════
+
+    source venv/bin/activate
+    
+    ./pa --policy-path tests/fixtures/dummy_policies/isms_policy.md --domain isms
+
+
+═══════════════════════════════════════════════════════════════
+  QUICK COMMANDS
+═══════════════════════════════════════════════════════════════
+
+    ./pa --help              Show all options
+    ./pa --version           Show version
+    ./pa --policy-path FILE  Analyze a policy
+
+
+═══════════════════════════════════════════════════════════════
+  AVAILABLE DOMAINS
+═══════════════════════════════════════════════════════════════
+
+    isms                Information Security
+    risk_management     Risk Management
+    patch_management    Patch Management
+    data_privacy        Data Privacy
+
+
+═══════════════════════════════════════════════════════════════
+  YOUR OLLAMA MODELS
+═══════════════════════════════════════════════════════════════
+
+    qwen2.5:3b-instruct    (default, 1.9 GB)
+    phi3.5:3.8b            (alternative, 2.2 GB)
+
+
+═══════════════════════════════════════════════════════════════
+  WHAT YOU'LL GET
+═══════════════════════════════════════════════════════════════
+
+    outputs/TIMESTAMP/
+    ├── gap_analysis.json          Gap report
+    ├── revised_policy.md           Improved policy
+    ├── implementation_roadmap.md   Action plan
+    └── audit_log.json             Audit trail
+
+
+═══════════════════════════════════════════════════════════════
+  NEED HELP?
+═══════════════════════════════════════════════════════════════
+
+    Read: START_HERE.md        Quick start guide
+    Read: READY_TO_USE.md      Complete guide
+    Read: CHEAT_SHEET.md       Quick reference
+
+
+═══════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+    Problem: "command not found: pa"
+    Fix:     chmod +x pa
+
+    Problem: "No module named 'cli'"
+    Fix:     source venv/bin/activate
+
+    Problem: Seeing warnings
+    Fix:     Use ./pa (not python -m cli.main)
+
+
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║   YOU'RE ALL SET! START ANALYZING POLICIES NOW! 🚀           ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝

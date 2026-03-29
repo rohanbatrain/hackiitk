@@ -1,0 +1,87 @@
+{
+  "policy_name": "ISMS Policy",
+  "policy_file": "isms_policy.md",
+  "expected_gaps": [
+    {
+      "subcategory_id": "GV.SC-01",
+      "function": "Govern",
+      "category": "Supply Chain Risk Management",
+      "description": "A cybersecurity supply chain risk management program, strategy, objectives, policies, and processes are established and agreed to by organizational stakeholders",
+      "severity": "High",
+      "reason": "Policy does not address supply chain risk management program or strategy",
+      "evidence": "No mention of supply chain, vendor security, or third-party risk management in governance sections"
+    },
+    {
+      "subcategory_id": "GV.SC-02",
+      "function": "Govern",
+      "category": "Supply Chain Risk Management",
+      "description": "Suppliers and third-party partners of information systems, components, and services are identified, prioritized, and assessed using a cyber supply chain risk assessment process",
+      "severity": "High",
+      "reason": "Policy lacks supplier and third-party cybersecurity assessment processes",
+      "evidence": "No supplier assessment or third-party security evaluation mentioned"
+    },
+    {
+      "subcategory_id": "GV.SC-03",
+      "function": "Govern",
+      "category": "Supply Chain Risk Management",
+      "description": "Contracts with suppliers and third-party partners are used to implement appropriate measures designed to meet the objectives of an organization's cybersecurity supply chain risk management plan and applicable regulatory requirements",
+      "severity": "High",
+      "reason": "Policy does not specify cybersecurity requirements in supplier contracts",
+      "evidence": "No contractual security requirements or supplier obligations mentioned"
+    },
+    {
+      "subcategory_id": "GV.SC-04",
+      "function": "Govern",
+      "category": "Supply Chain Risk Management",
+      "description": "Suppliers and third-party partners are routinely assessed using audits, test results, or other forms of evaluations to confirm they are meeting their contractual obligations",
+      "severity": "Medium",
+      "reason": "Policy lacks ongoing supplier security monitoring and assessment",
+      "evidence": "No supplier audit or evaluation processes described"
+    },
+    {
+      "subcategory_id": "GV.SC-05",
+      "function": "Govern",
+      "category": "Supply Chain Risk Management",
+      "description": "Response and recovery planning and testing are conducted with suppliers and third-party providers",
+      "severity": "Medium",
+      "reason": "Policy does not include suppliers in incident response or recovery planning",
+      "evidence": "Incident response section does not mention supplier coordination"
+    },
+    {
+      "subcategory_id": "GV.OV-01",
+      "function": "Govern",
+      "category": "Organizational Context",
+      "description": "The organizational mission, objectives, stakeholders, and activities are understood and prioritized; this information is used to inform cybersecurity roles, responsibilities, and risk management decisions",
+      "severity": "High",
+      "reason": "Policy lacks explicit connection between organizational mission and cybersecurity strategy",
+      "evidence": "No organizational context or mission alignment in cybersecurity framework"
+    },
+    {
+      "subcategory_id": "GV.OV-02",
+      "function": "Govern",
+      "category": "Organizational Context",
+      "description": "Internal and external stakeholders are understood, and their needs and expectations regarding cybersecurity are understood and considered",
+      "severity": "Medium",
+      "reason": "Policy does not identify or address stakeholder cybersecurity expectations",
+      "evidence": "No stakeholder analysis or expectations documented"
+    },
+    {
+      "subcategory_id": "GV.OV-03",
+      "function": "Govern",
+      "category": "Organizational Context",
+      "description": "Legal, regulatory, and contractual requirements regarding cybersecurity — including privacy and civil liberties obligations — are understood and managed",
+      "severity": "High",
+      "reason": "Policy mentions compliance generically but lacks specific legal/regulatory requirement management",
+      "evidence": "Section 9 mentions compliance but does not detail specific regulatory requirements or management processes"
+    }
+  ],
+  "total_planted_gaps": 8,
+  "minimum_required_detection": 7,
+  "detection_threshold_percentage": 80,
+  "notes": [
+    "The ISMS policy intentionally omits all GV.SC (Supply Chain Risk Management) subcategories",
+    "The policy also omits GV.OV (Organizational Context) subcategories",
+    "These are critical governance gaps that should be detected by Stage A analysis",
+    "At least 7 out of 8 gaps (87.5%) must be detected to pass validation"
+  ]
+}

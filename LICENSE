@@ -1,0 +1,36 @@
+MIT License
+
+Copyright (c) 2024 Offline Policy Gap Analyzer Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+IMPORTANT COMPLIANCE NOTICE:
+
+This software generates AI-assisted policy analysis and revisions. The CIS 
+MS-ISAC NIST Cybersecurity Framework Policy Template Guide templates are 
+advisory and may not reflect the most recent applicable standards or your 
+organization's specific legal, regulatory, or operational requirements.
+
+All outputs from this system MUST be reviewed, validated, and approved by 
+qualified legal counsel, compliance officers, and security leadership before 
+adoption. The authors and contributors of this software assume no liability 
+for the accuracy, completeness, or suitability of any AI-generated policy 
+content.

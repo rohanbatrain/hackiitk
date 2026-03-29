@@ -1,0 +1,33 @@
+# Example configuration file for Offline Policy Gap Analyzer
+# Copy this file to config.yaml and customize as needed
+
+# Text chunking parameters
+chunk_size: 512  # Maximum tokens per chunk (128-2048)
+overlap: 50      # Token overlap between chunks (0-512)
+
+# Retrieval parameters
+top_k: 5         # Number of results to retrieve (1-20)
+
+# LLM generation parameters
+temperature: 0.1    # Sampling temperature for determinism (0.0-2.0)
+max_tokens: 512     # Maximum generation length (64-4096)
+
+# Severity thresholds for gap classification
+severity_thresholds:
+  covered: 0.8        # Score > 0.8 = Covered
+  partial_high: 0.5   # Score 0.5-0.8 = Partial
+  ambiguous_high: 0.3 # Score 0.3-0.5 = Ambiguous (< 0.3 = Missing)
+
+# CSF function priority (order matters for domain-specific analysis)
+csf_function_priority:
+  - Govern
+  - Identify
+  - Protect
+  - Detect
+  - Respond
+  - Recover
+
+# Model configuration
+embedding_model: all-MiniLM-L6-v2
+llm_model: qwen2.5-3b-instruct
+vector_store_backend: chromadb  # Options: chromadb, faiss

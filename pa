@@ -1,0 +1,17 @@
+#!/bin/bash
+# Simple wrapper for policy-analyzer that suppresses warnings
+
+# Activate venv311 if not already activated
+if [ -z "$VIRTUAL_ENV" ]; then
+    if [ -d "venv311" ]; then
+        source venv311/bin/activate
+    elif [ -d "venv" ]; then
+        source venv/bin/activate
+    else
+        echo "Error: No virtual environment found. Run ./setup.sh first."
+        exit 1
+    fi
+fi
+
+# Run with warnings suppressed
+PYTHONWARNINGS="ignore" python -m cli.main "$@"

@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "offline-policy-gap-analyzer"
+version = "0.1.0"
+description = "Local LLM-powered system for analyzing organizational cybersecurity policies against NIST CSF 2.0"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Policy Analyzer Team"}
+]
+keywords = ["nist", "csf", "policy", "gap-analysis", "llm", "rag", "offline", "cybersecurity"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "PyMuPDF>=1.23.0",
+    "pdfplumber>=0.10.0",
+    "python-docx>=1.0.0",
+    "sentence-transformers>=2.2.0",
+    "chromadb>=0.4.0",
+    "langchain>=0.1.0",
+    "llama-cpp-python>=0.2.0",
+    "ollama-python>=0.1.0",
+    "hypothesis>=6.90.0",
+    "pytest>=7.4.0",
+    "pyyaml>=6.0",
+    "rank-bm25>=0.2.0",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "hypothesis>=6.90.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.scripts]
+policy-analyzer = "cli.main:main"
+
+[tool.setuptools]
+packages = ["ingestion", "reference_builder", "retrieval", "analysis", "revision", "reporting", "models", "cli", "utils", "orchestration"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "integration: Integration tests that require full system setup",
+    "smoke: Smoke tests for quick validation",
+    "wiring: Component wiring verification tests",
+    "offline: Tests that validate offline operation",
+    "slow: Tests that take a long time to run",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

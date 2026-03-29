@@ -1,0 +1,32 @@
+# Run these commands one by one in your terminal
+# You're already in venv311, so just copy-paste these:
+
+# 1. Install sentence-transformers (this will take a few minutes)
+pip install sentence-transformers
+
+# 2. Install chromadb
+pip install chromadb
+
+# 3. Install langchain
+pip install langchain langchain-community ollama
+
+# 4. Install document processing
+pip install pypdf2 python-docx chardet markdown
+
+# 5. Install CLI tools
+pip install click rich tabulate watchdog
+
+# 6. Install the package
+pip install -e .
+
+# 7. Download embedding model
+python scripts/download_models.py --embedding
+
+# 8. Move model to correct location
+mkdir -p models/embeddings
+mv models/all-MiniLM-L6-v2 models/embeddings/ 2>/dev/null || true
+
+# 9. Test it!
+./pa --policy-path tests/fixtures/dummy_policies/isms_policy.md --domain isms
+
+# That's it!

@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-03-29T17:04:54.398315",
+  "input_file_path": "comprehensive_test_20260329_162554/policies/data_privacy.md",
+  "input_file_hash": "6457e2d862730d8a6069c1f1dd9c0690c8d50e57810a05de183135f85aabf919",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "outputs/data_privacy_20260329_170454",
+  "analysis_duration_seconds": 102.44370102882385
+}

@@ -1,0 +1,79 @@
+# Offline Policy Gap Analyzer - Configuration File
+
+# Text Chunking Parameters
+chunking:
+  chunk_size: 512  # Maximum tokens per chunk
+  overlap: 50      # Token overlap between consecutive chunks
+
+# Retrieval Parameters
+retrieval:
+  top_k: 5         # Number of results to retrieve from each method (dense/sparse)
+  rerank_top_k: 3  # Number of results after reranking
+
+# LLM Parameters
+llm:
+  temperature: 0.1      # Low temperature for deterministic outputs
+  max_tokens: 512       # Maximum generation length
+  model_name: "qwen2.5-3b-instruct"  # Default model
+  backend: "ollama"     # "ollama" or "llama-cpp"
+
+# Embedding Model
+embedding:
+  model_name: "all-MiniLM-L6-v2"
+  dimensions: 384
+
+# Vector Store
+vector_store:
+  type: "chromadb"  # "chromadb" or "faiss"
+  persist_directory: "./vector_store"
+
+# Gap Analysis
+analysis:
+  # Stage A scoring thresholds
+  covered_threshold: 0.8      # Score >= 0.8 → Covered
+  partial_threshold: 0.5      # 0.5 <= Score < 0.8 → Partially Covered
+  ambiguous_threshold: 0.3    # 0.3 <= Score < 0.5 → Ambiguous
+                              # Score < 0.3 → Missing
+  
+  # Severity thresholds
+  severity_mapping:
+    critical: ["GV.SC", "GV.RM", "PR.AA"]  # CSF categories mapped to critical
+    high: ["ID.RA", "PR.DS", "DE.CM"]
+    medium: ["PR.AT", "PR.PS", "RS.CO"]
+    low: []  # Default for unmapped categories
+
+# Policy Domain Prioritization
+domain_prioritization:
+  isms: ["GV.OC", "GV.OV", "GV.RM", "GV.SC"]
+  risk_management: ["GV.RM", "GV.OV", "ID.RA"]
+  patch_management: ["ID.RA", "PR.DS", "PR.PS"]
+  data_privacy: ["PR.AA", "PR.DS", "PR.AT"]
+
+# Output Configuration
+output:
+  directory: "./outputs"
+  timestamp_format: "%Y%m%d_%H%M%S"
+  formats: ["markdown", "json"]
+
+# Reference Catalog
+reference_catalog:
+  path: "./reference_catalog.json"
+  cis_guide_path: "./data/cis_guide.pdf"
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "analyzer.log"
+  audit_log: "audit.log"
+
+# Performance
+performance:
+  batch_size: 32           # Embedding batch size
+  max_document_pages: 100  # Maximum pages to process
+  memory_threshold: 0.9    # Trigger warnings at 90% RAM usage
+
+# Model Paths
+models:
+  embedding_model_path: "./models/all-MiniLM-L6-v2"
+  llm_model_path: "./models/qwen2.5-3b-instruct-q4_k_m.gguf"
+  reranker_model_path: "./models/cross-encoder"
