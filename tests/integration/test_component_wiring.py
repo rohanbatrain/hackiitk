@@ -15,6 +15,22 @@ import shutil
 from orchestration.analysis_pipeline import AnalysisPipeline, PipelineConfig
 
 
+def is_chromadb_available():
+    """Check if ChromaDB is available and compatible."""
+    try:
+        import chromadb
+        return True
+    except Exception:
+        return False
+
+
+# Skip all tests if ChromaDB is not available
+pytestmark = pytest.mark.skipif(
+    not is_chromadb_available(),
+    reason="ChromaDB not available or incompatible with current environment"
+)
+
+
 @pytest.fixture
 def temp_dirs():
     """Create temporary directories for test."""

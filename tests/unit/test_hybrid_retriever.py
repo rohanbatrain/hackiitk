@@ -123,7 +123,7 @@ def vector_store(temp_dir, embedding_engine, sample_catalog):
     store.add_embeddings(
         embeddings=embeddings,
         metadata=metadata,
-        collection_name="reference_catalog"
+        collection_name="catalog"
     )
     
     return store

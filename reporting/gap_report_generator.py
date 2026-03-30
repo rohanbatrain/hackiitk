@@ -203,7 +203,6 @@ class GapReportGenerator:
             "gaps": [
                 {
                     "subcategory_id": gap.subcategory_id,
-                    "function": self._extract_function_from_id(gap.subcategory_id),
                     "description": gap.subcategory_description,
                     "status": gap.status,
                     "evidence_quote": gap.evidence_quote,

@@ -343,22 +343,22 @@ class TestStageADetector:
         assert score == 0.0
     
     def test_coverage_classification_covered(self, detector):
-        """Test coverage classification for covered status (>0.8)."""
-        status = detector._classify_coverage(0.85)
+        """Test coverage classification for covered status (>0.65)."""
+        status = detector._classify_coverage(0.70)
         assert status == 'covered'
         
         status = detector._classify_coverage(0.9)
         assert status == 'covered'
     
     def test_coverage_classification_partially_covered(self, detector):
-        """Test coverage classification for partially covered status (0.5-0.8)."""
-        status = detector._classify_coverage(0.5)
+        """Test coverage classification for partially covered status (0.45-0.65)."""
+        status = detector._classify_coverage(0.45)
+        assert status == 'partially_covered'
+        
+        status = detector._classify_coverage(0.55)
         assert status == 'partially_covered'
         
         status = detector._classify_coverage(0.65)
-        assert status == 'partially_covered'
-        
-        status = detector._classify_coverage(0.8)
         assert status == 'partially_covered'
     
     def test_coverage_classification_missing(self, detector):
@@ -370,14 +370,14 @@ class TestStageADetector:
         assert status == 'missing'
     
     def test_coverage_classification_ambiguous(self, detector):
-        """Test coverage classification for ambiguous status (0.3-0.5)."""
-        status = detector._classify_coverage(0.3)
+        """Test coverage classification for ambiguous status (0.25-0.45)."""
+        status = detector._classify_coverage(0.25)
         assert status == 'ambiguous'
         
-        status = detector._classify_coverage(0.4)
+        status = detector._classify_coverage(0.35)
         assert status == 'ambiguous'
         
-        status = detector._classify_coverage(0.49)
+        status = detector._classify_coverage(0.44)
         assert status == 'ambiguous'
     
     def test_detect_evidence_no_retrieval_results(

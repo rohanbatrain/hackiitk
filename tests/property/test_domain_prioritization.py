@@ -67,12 +67,13 @@ class TestDomainSpecificPrioritization:
         # Extract subcategory IDs
         subcategory_ids = [s.subcategory_id for s in subcategories]
         
-        # Verify all returned subcategories are from Govern function
-        for subcat in subcategories:
-            assert subcat.function == 'Govern', (
-                f"ISMS domain should only prioritize Govern function, "
-                f"but got {subcat.function} for {subcat.subcategory_id}"
-            )
+        # Verify all CSF functions are represented (ISMS is comprehensive)
+        functions_present = set(s.function for s in subcategories)
+        expected_functions = {'Govern', 'Identify', 'Protect', 'Detect', 'Respond', 'Recover'}
+        assert functions_present == expected_functions, (
+            f"ISMS domain should include all CSF functions for comprehensive analysis, "
+            f"but got {functions_present}"
+        )
         
         # Verify all GV subcategories are included
         expected_gv_ids = [

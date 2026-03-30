@@ -111,7 +111,7 @@ def create_test_retriever(catalog, temp_dir):
         vector_store.add_embeddings(
             embeddings=embeddings,
             metadata=metadata,
-            collection_name="reference_catalog"
+            collection_name="catalog"
         )
         
         # Create hybrid retriever

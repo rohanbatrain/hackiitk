@@ -13,6 +13,16 @@ from analysis.llm_runtime import LLMRuntime
 import os
 
 
+def is_ollama_available():
+    """Check if Ollama backend is available."""
+    try:
+        from analysis.llm_runtime import LLMRuntime
+        runtime = LLMRuntime(model_path="qwen2.5:3b-instruct", backend="ollama")
+        return True
+    except Exception:
+        return False
+
+
 # Test configuration - these models should be available locally
 TEST_MODELS = {
     "ollama": "qwen2.5:3b-instruct",
@@ -111,6 +121,7 @@ def test_offline_llm_operation_llama_cpp(llama_cpp_runtime):
 
 # Property 49: Multi-Model Support
 # **Validates: Requirements 17.6**
+@pytest.mark.skipif(not is_ollama_available(), reason="Ollama backend not available")
 @pytest.mark.parametrize("model_config", [
     ("ollama", "qwen2.5:3b-instruct"),
     ("ollama", "phi3.5:3.8b-mini-instruct"),
