@@ -46,13 +46,23 @@ jobs:
     
     - name: Run ${{ matrix.category }} tests
       run: |
-        # Run tests using the extreme testing CLI
-        if [ "${{ matrix.category }}" = "unit" ]; then
+        # Run tests directly with pytest
+        if [ "${{ matrix.category }}" = "property" ]; then
+          python -m pytest tests/extreme/engines/test_property_test_expander.py tests/extreme/test_properties.py -v --tb=short || true
+        elif [ "${{ matrix.category }}" = "boundary" ]; then
+          python -m pytest tests/extreme/engines/test_boundary_tester.py -v --tb=short || true
+        elif [ "${{ matrix.category }}" = "adversarial" ]; then
+          python -m pytest tests/extreme/engines/test_adversarial_tester.py -v --tb=short || true
+        elif [ "${{ matrix.category }}" = "stress" ]; then
+          python -m pytest tests/extreme/engines/test_stress_tester.py tests/extreme/engines/test_component_stress_tester.py tests/extreme/engines/test_output_audit_stress_tester.py tests/extreme/engines/test_embedding_vector_store_stress_tester.py tests/extreme/engines/test_llm_model_stress_tester.py -v --tb=short || true
+        elif [ "${{ matrix.category }}" = "chaos" ]; then
+          python -m pytest tests/extreme/engines/test_chaos_engine.py tests/extreme/engines/test_integration_chaos.py tests/extreme/engines/test_pipeline_fault_injector.py -v --tb=short || true
+        elif [ "${{ matrix.category }}" = "performance" ]; then
+          python -m pytest tests/extreme/engines/test_performance_profiler.py -v --tb=short || true
+        elif [ "${{ matrix.category }}" = "unit" ]; then
           python -m pytest tests/unit/ -v --tb=short || true
         elif [ "${{ matrix.category }}" = "integration" ]; then
           python -m pytest tests/integration/ -v --tb=short || true
-        else
-          python -m tests.extreme.cli --categories ${{ matrix.category }} --verbose || true
         fi
       continue-on-error: true
     
