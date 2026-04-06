@@ -28,9 +28,9 @@ jobs:
     
     - name: Run smoke tests
       env:
-        PYTHONPATH: /github/workspace
+        PYTHONPATH: ${{ github.workspace }}
       run: |
-        cd /github/workspace
+        cd "${{ github.workspace }}"
         mkdir -p test_outputs/extreme
         
         # First, verify pytest can discover tests
