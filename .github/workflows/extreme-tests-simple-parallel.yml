@@ -152,25 +152,36 @@ jobs:
         print("=" * 80)
         print("PARALLEL TEST SUITE RESULTS")
         print("=" * 80)
-        print(f"Parallel Jobs: {all_results[\"parallel_jobs\"]}")
-        print(f"Total Tests: {all_results[\"total_tests\"]}")
-        print(f"Passed: {all_results[\"passed\"]} ({all_results[\"pass_rate\"]:.1f}%)")
-        print(f"Failed: {all_results[\"failed\"]}")
-        print(f"Errors: {all_results[\"errors\"]}")
-        print(f"Skipped: {all_results[\"skipped\"]}")
-        print(f"Duration: {all_results[\"duration_seconds\"]/60:.1f} minutes")
+        pj = all_results["parallel_jobs"]
+        tt = all_results["total_tests"]
+        ps = all_results["passed"]
+        pr = all_results["pass_rate"]
+        fl = all_results["failed"]
+        er = all_results["errors"]
+        sk = all_results["skipped"]
+        dur = all_results["duration_seconds"]/60
+        print(f"Parallel Jobs: {pj}")
+        print(f"Total Tests: {tt}")
+        print(f"Passed: {ps} ({pr:.1f}%)")
+        print(f"Failed: {fl}")
+        print(f"Errors: {er}")
+        print(f"Skipped: {sk}")
+        print(f"Duration: {dur:.1f} minutes")
         print()
         print("Category Breakdown:")
         for cat, stats in all_results["categories"].items():
             if stats["total"] > 0:
                 cat_pass_rate = (stats["passed"] / stats["total"]) * 100
-                print(f"  {cat}: {stats[\"passed\"]}/{stats[\"total\"]} ({cat_pass_rate:.1f}%)")
+                cat_p = stats["passed"]
+                cat_t = stats["total"]
+                print(f"  {cat}: {cat_p}/{cat_t} ({cat_pass_rate:.1f}%)")
         print("=" * 80)
         
         if all_results["pass_rate"] >= 95:
             print("✅ SUCCESS CRITERIA MET (≥95% pass rate)")
         else:
-            print(f"⚠️ SUCCESS CRITERIA NOT MET ({all_results[\"pass_rate\"]:.1f}% < 95%)")
+            final_pr = all_results["pass_rate"]
+            print(f"⚠️ SUCCESS CRITERIA NOT MET ({final_pr:.1f}% < 95%)")
         '
     
     - name: Upload aggregated results
