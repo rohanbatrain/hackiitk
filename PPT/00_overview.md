@@ -1,4 +1,4 @@
-# Offline Policy Gap Analyser – Understanding Package
+# Offline Policy Gap Analyzer – Understanding Package
 
 This `PPT/` package is a reverse-engineered, implementation-grounded documentation set for the repository at:
 

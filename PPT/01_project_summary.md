@@ -2,7 +2,7 @@
 
 ## Project name
 
-Offline Policy Gap Analyzer (also referred to in this package as “Offline Policy Gap Analyser”).
+Offline Policy Gap Analyzer.
 
 ## Primary objective
 
