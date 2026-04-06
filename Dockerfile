@@ -66,7 +66,7 @@ COPY retrieval/ retrieval/
 COPY revision/ revision/
 COPY utils/ utils/
 COPY vector_store/ vector_store/
-COPY pyproject.toml .coveragerc ./
+COPY pyproject.toml ./
 
 # Create output directories
 RUN mkdir -p test_outputs/extreme test_outputs/coverage
