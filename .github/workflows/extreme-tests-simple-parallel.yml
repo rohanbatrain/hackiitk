@@ -83,24 +83,11 @@ jobs:
       run: |
         cd /github/workspace
         
-        # Run tests directly with pytest
-        if [ "${{ matrix.category }}" = "property" ]; then
-          python -m pytest tests/extreme/engines/test_property_test_expander.py tests/property/ -v --tb=short --maxfail=5 -x || true
-        elif [ "${{ matrix.category }}" = "boundary" ]; then
-          python -m pytest tests/extreme/engines/test_boundary_tester.py -v --tb=short --maxfail=5 || true
-        elif [ "${{ matrix.category }}" = "adversarial" ]; then
-          python -m pytest tests/extreme/engines/test_adversarial_tester.py -v --tb=short --maxfail=5 || true
-        elif [ "${{ matrix.category }}" = "stress" ]; then
-          python -m pytest tests/extreme/engines/test_stress_tester.py tests/extreme/engines/test_component_stress_tester.py -v --tb=short --maxfail=3 || true
-        elif [ "${{ matrix.category }}" = "chaos" ]; then
-          python -m pytest tests/extreme/engines/test_chaos_engine.py tests/extreme/engines/test_integration_chaos.py -v --tb=short --maxfail=3 || true
-        elif [ "${{ matrix.category }}" = "performance" ]; then
-          python -m pytest tests/extreme/engines/test_performance_profiler.py -v --tb=short --maxfail=3 || true
-        elif [ "${{ matrix.category }}" = "unit" ]; then
-          python -m pytest tests/unit/ -v --tb=short --maxfail=10 || true
-        elif [ "${{ matrix.category }}" = "integration" ]; then
-          python -m pytest tests/integration/ -v --tb=short --maxfail=5 || true
-        fi
+        # Make script executable
+        chmod +x .github/scripts/run_tests.sh
+        
+        # Run tests using the comprehensive script
+        .github/scripts/run_tests.sh "${{ matrix.category }}" "test_outputs/extreme"
       continue-on-error: true
     
     - name: Upload test results

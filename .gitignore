@@ -65,6 +65,16 @@ htmlcov/
 data/*.pdf
 data/*.docx
 
+# Large test files (>10MB)
+tests/adversarial/malicious_016_large_object.pdf
+tests/adversarial/malicious_017_large_object.pdf
+tests/adversarial/malicious_018_large_object.pdf
+tests/adversarial/malicious_019_large_object.pdf
+tests/adversarial/malicious_020_large_object.pdf
+tests/adversarial/malicious_022_mixed.pdf
+tests/adversarial/malicious_023_mixed.pdf
+tests/adversarial/malicious_024_mixed.pdf
+
 # Temporary Files
 *.tmp
 *.bak

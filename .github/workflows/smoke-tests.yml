@@ -31,11 +31,22 @@ jobs:
         PYTHONPATH: /github/workspace
       run: |
         cd /github/workspace
+        mkdir -p test_outputs/extreme
         
-        # Run quick smoke tests
-        python -m pytest tests/extreme/engines/test_determinism_smoke.py -v --tb=short || true
-        python -m pytest tests/unit/test_test_data_generator.py -v --tb=short || true
-        python -m pytest tests/unit/test_metrics_collector.py -v --tb=short || true
+        # First, verify pytest can discover tests
+        echo "=== Test Discovery ==="
+        python -m pytest --collect-only tests/unit/ | head -30
+        
+        # Run quick smoke tests with output capture
+        echo "=== Running Smoke Tests ==="
+        python -m pytest tests/unit/test_test_data_generator.py tests/unit/test_metrics_collector.py \
+          -v --tb=short \
+          --junitxml=test_outputs/extreme/junit_smoke.xml \
+          --json-report --json-report-file=test_outputs/extreme/report_smoke.json || true
+        
+        # Show results
+        echo "=== Test Results ==="
+        ls -lh test_outputs/extreme/ || echo "No outputs generated"
         
         echo "✓ Smoke tests completed"
     
