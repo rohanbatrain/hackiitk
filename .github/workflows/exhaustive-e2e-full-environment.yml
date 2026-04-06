@@ -149,6 +149,7 @@ jobs:
           collected = summary.get("collected", len(tests))
           passed = summary.get("passed", 0)
           failed = summary.get("failed", 0)
+          # pytest-json-report can emit either "error" or "errors" depending on version
           errors = summary.get("error", 0) + summary.get("errors", 0)
           skipped = summary.get("skipped", 0)
           xfailed = summary.get("xfailed", 0)
@@ -160,7 +161,8 @@ jobs:
           status_by_suite = defaultdict(Counter)
           for t in tests:
               nodeid = t.get("nodeid", "")
-              suite = nodeid.split("/")[1] if nodeid.startswith("tests/") and len(nodeid.split("/")) > 1 else "other"
+              nodeid_parts = nodeid.split("/")
+              suite = nodeid_parts[1] if nodeid.startswith("tests/") and len(nodeid_parts) > 1 else "other"
               by_suite[suite] += 1
               status_by_suite[suite][t.get("outcome", "unknown")] += 1
 
@@ -186,9 +188,13 @@ jobs:
           bottlenecks = []
           if console_log.exists():
               lines = console_log.read_text(errors="ignore").splitlines()
-              try:
-                  idx = lines.index("=================================== slowest durations ===================================")
-                  for l in lines[idx + 1:]:
+              slowest_header_idx = None
+              for i, line in enumerate(lines):
+                  if re.search(r"slowest durations", line, re.IGNORECASE):
+                      slowest_header_idx = i
+                      break
+              if slowest_header_idx is not None:
+                  for l in lines[slowest_header_idx + 1:]:
                       if not l.strip():
                           continue
                       if l.startswith("(") or l.startswith("="):
@@ -197,8 +203,6 @@ jobs:
                           bottlenecks.append(l.strip())
                       if len(bottlenecks) >= 20:
                           break
-              except ValueError:
-                  pass
 
           missing_requirements = []
           if model_failed:
