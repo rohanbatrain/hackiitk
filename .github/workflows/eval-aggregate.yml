@@ -1,0 +1,97 @@
+name: Eval Aggregate
+
+on:
+  workflow_call:
+    inputs:
+      gating_mode:
+        required: true
+        type: boolean
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt -r requirements.txt
+
+      - name: Download all shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: eval-shard-*
+          path: all-eval-artifacts
+          merge-multiple: true
+
+      - name: Aggregate eval outputs
+        run: |
+          python - << 'PY'
+          import json
+          from pathlib import Path
+          from tests.evals.harness.aggregator import aggregate_from_dir
+
+          run_meta = {
+              "run_id": "${{ github.run_id }}",
+              "commit": "${{ github.sha }}",
+              "workflow": "${{ github.workflow }}",
+              "suite": "all",
+              "model": "all",
+              "shard": 0,
+              "repeat": 0,
+          }
+          environment = {
+              "runner_type": "github-hosted",
+              "cpu": "x64",
+              "memory_mb": 0,
+              "ollama_host": "http://localhost:11434",
+              "model_digest": None,
+          }
+          reproducibility = {
+              "runs_compared": 1,
+              "agreement_rate": 1.0,
+          }
+          Path("test_outputs/evals").mkdir(parents=True, exist_ok=True)
+          payload = aggregate_from_dir(
+              input_dir="all-eval-artifacts",
+              output_file="test_outputs/evals/final_eval_summary.json",
+              run_meta=run_meta,
+              environment=environment,
+              reproducibility=reproducibility,
+          )
+          print(json.dumps(payload["aggregate"], indent=2))
+          PY
+
+      - name: Upload aggregate report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-aggregate-report
+          path: test_outputs/evals/final_eval_summary.json
+
+      - name: Enforce gating thresholds
+        if: ${{ inputs.gating_mode }}
+        run: |
+          python - << 'PY'
+          import json
+          from pathlib import Path
+          p = Path("test_outputs/evals/final_eval_summary.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          agg = data["aggregate"]
+          checks = [
+              (agg["schema_valid_rate"] >= 0.95, f"schema_valid_rate {agg['schema_valid_rate']:.3f} < 0.95"),
+              (agg["crash_rate"] <= 0.05, f"crash_rate {agg['crash_rate']:.3f} > 0.05"),
+              (agg["weighted_score"] >= 0.70, f"weighted_score {agg['weighted_score']:.3f} < 0.70"),
+          ]
+          errors = [msg for ok, msg in checks if not ok]
+          if errors:
+              for e in errors:
+                  print(f"FAIL: {e}")
+              raise SystemExit(1)
+          print("Gating thresholds satisfied.")
+          PY

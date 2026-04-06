@@ -1,0 +1,4 @@
+# Minimal ISMS Policy
+
+We perform annual risk assessments and maintain incident response procedures.
+Access is granted using least privilege principles.

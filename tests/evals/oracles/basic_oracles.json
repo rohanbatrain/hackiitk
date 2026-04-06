@@ -1,0 +1,21 @@
+{
+  "version": "1",
+  "cases": [
+    {
+      "case_id": "clean_minimal_policy",
+      "policy_path": "/home/runner/work/hackiitk/hackiitk/tests/evals/fixtures/clean/minimal_policy.txt",
+      "domain": "isms",
+      "expected": {
+        "min_correctness": 0.5
+      }
+    },
+    {
+      "case_id": "empty_input_case",
+      "policy_path": "/home/runner/work/hackiitk/hackiitk/tests/evals/fixtures/clean/empty.txt",
+      "domain": "isms",
+      "expected": {
+        "should_error": true
+      }
+    }
+  ]
+}

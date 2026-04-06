@@ -1,0 +1,68 @@
+name: Reusable Eval Shard
+
+on:
+  workflow_call:
+    inputs:
+      suite:
+        required: true
+        type: string
+      model:
+        required: true
+        type: string
+      shard:
+        required: true
+        type: number
+      repeat:
+        required: true
+        type: number
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
+
+jobs:
+  eval-shard:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt -r requirements.txt
+
+      - name: Setup Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 15
+          ollama pull "${{ inputs.model }}"
+
+      - name: Execute eval shard
+        env:
+          OLLAMA_HOST: http://localhost:11434
+        run: |
+          mkdir -p test_outputs/evals/${{ inputs.model }}/${{ inputs.suite }}/shard-${{ inputs.shard }}/repeat-${{ inputs.repeat }}
+          python -m tests.evals.harness.cli \
+            --suite "${{ inputs.suite }}" \
+            --model "${{ inputs.model }}" \
+            --shard "${{ inputs.shard }}" \
+            --repeat "${{ inputs.repeat }}" \
+            --run-id "${{ github.run_id }}" \
+            --input-manifest "/home/runner/work/hackiitk/hackiitk/tests/evals/oracles/basic_oracles.json" \
+            --output-dir "test_outputs/evals/${{ inputs.model }}/${{ inputs.suite }}/shard-${{ inputs.shard }}/repeat-${{ inputs.repeat }}"
+
+      - name: Upload shard artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-shard-${{ inputs.model }}-${{ inputs.suite }}-${{ inputs.shard }}-${{ inputs.repeat }}
+          path: test_outputs/evals/${{ inputs.model }}/${{ inputs.suite }}/shard-${{ inputs.shard }}/repeat-${{ inputs.repeat }}
+          retention-days: 14
