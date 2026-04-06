@@ -6,12 +6,10 @@ on:
   pull_request:
     branches: [ main, develop ]
   schedule:
-    # Run full suite weekly on Sunday at 2 AM UTC
     - cron: '0 2 * * 0'
   workflow_dispatch:
 
 jobs:
-  # Run tests in parallel using matrix strategy
   test-suite:
     name: ${{ matrix.category }}
     runs-on: ubuntu-latest
@@ -70,7 +68,6 @@ jobs:
           test_outputs/extreme/*.xml
         if-no-files-found: ignore
   
-  # Aggregate results
   aggregate-results:
     name: Aggregate Test Results
     runs-on: ubuntu-latest
@@ -92,96 +89,85 @@ jobs:
     
     - name: Aggregate results
       run: |
-        python << 'EOF'
+        python -c '
         import json
         import os
         from pathlib import Path
         from datetime import datetime
         
-        results_dir = Path('all-test-results')
+        results_dir = Path("all-test-results")
         
         all_results = {
-            'execution_date': datetime.now().isoformat(),
-            'total_tests': 0,
-            'passed': 0,
-            'failed': 0,
-            'errors': 0,
-            'skipped': 0,
-            'duration_seconds': 0,
-            'categories': {},
-            'parallel_jobs': 0
+            "execution_date": datetime.now().isoformat(),
+            "total_tests": 0,
+            "passed": 0,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "duration_seconds": 0,
+            "categories": {},
+            "parallel_jobs": 0
         }
         
-        # Parse all result artifacts
         for artifact_dir in results_dir.iterdir():
-            if artifact_dir.is_dir() and 'test-results-' in artifact_dir.name:
-                all_results['parallel_jobs'] += 1
-                category = artifact_dir.name.replace('test-results-', '')
+            if artifact_dir.is_dir() and "test-results-" in artifact_dir.name:
+                all_results["parallel_jobs"] += 1
+                category = artifact_dir.name.replace("test-results-", "")
                 
-                if category not in all_results['categories']:
-                    all_results['categories'][category] = {
-                        'total': 0,
-                        'passed': 0,
-                        'failed': 0,
-                        'errors': 0
-                    }
+                if category not in all_results["categories"]:
+                    all_results["categories"][category] = {"total": 0, "passed": 0, "failed": 0, "errors": 0}
                 
-                # Look for JSON reports
-                for json_file in artifact_dir.glob('**/*.json'):
+                for json_file in artifact_dir.glob("**/*.json"):
                     try:
                         with open(json_file) as f:
                             data = json.load(f)
                         
-                        if 'total_tests' in data:
-                            all_results['total_tests'] += data.get('total_tests', 0)
-                            all_results['passed'] += data.get('passed', 0)
-                            all_results['failed'] += data.get('failed', 0)
-                            all_results['errors'] += data.get('errors', 0)
-                            all_results['skipped'] += data.get('skipped', 0)
-                            all_results['duration_seconds'] += data.get('duration_seconds', 0)
+                        if "total_tests" in data:
+                            all_results["total_tests"] += data.get("total_tests", 0)
+                            all_results["passed"] += data.get("passed", 0)
+                            all_results["failed"] += data.get("failed", 0)
+                            all_results["errors"] += data.get("errors", 0)
+                            all_results["skipped"] += data.get("skipped", 0)
+                            all_results["duration_seconds"] += data.get("duration_seconds", 0)
                             
-                            all_results['categories'][category]['total'] += data.get('total_tests', 0)
-                            all_results['categories'][category]['passed'] += data.get('passed', 0)
-                            all_results['categories'][category]['failed'] += data.get('failed', 0)
-                            all_results['categories'][category]['errors'] += data.get('errors', 0)
+                            all_results["categories"][category]["total"] += data.get("total_tests", 0)
+                            all_results["categories"][category]["passed"] += data.get("passed", 0)
+                            all_results["categories"][category]["failed"] += data.get("failed", 0)
+                            all_results["categories"][category]["errors"] += data.get("errors", 0)
                     except Exception as e:
                         print(f"Error processing {json_file}: {e}")
         
-        # Calculate pass rate
-        if all_results['total_tests'] > 0:
-            all_results['pass_rate'] = (all_results['passed'] / all_results['total_tests']) * 100
+        if all_results["total_tests"] > 0:
+            all_results["pass_rate"] = (all_results["passed"] / all_results["total_tests"]) * 100
         else:
-            all_results['pass_rate'] = 0
+            all_results["pass_rate"] = 0
         
-        # Save results
-        with open('aggregated_results.json', 'w') as f:
+        with open("aggregated_results.json", "w") as f:
             json.dump(all_results, f, indent=2)
         
-        # Print summary
-        print('=' * 80)
-        print('PARALLEL TEST SUITE RESULTS')
-        print('=' * 80)
-        print(f'Parallel Jobs: {all_results["parallel_jobs"]}')
-        print(f'Total Tests: {all_results["total_tests"]}')
-        print(f'Passed: {all_results["passed"]} ({all_results["pass_rate"]:.1f}%)')
-        print(f'Failed: {all_results["failed"]}')
-        print(f'Errors: {all_results["errors"]}')
-        print(f'Skipped: {all_results["skipped"]}')
-        print(f'Duration: {all_results["duration_seconds"]/60:.1f} minutes')
+        print("=" * 80)
+        print("PARALLEL TEST SUITE RESULTS")
+        print("=" * 80)
+        print(f"Parallel Jobs: {all_results[\"parallel_jobs\"]}")
+        print(f"Total Tests: {all_results[\"total_tests\"]}")
+        print(f"Passed: {all_results[\"passed\"]} ({all_results[\"pass_rate\"]:.1f}%)")
+        print(f"Failed: {all_results[\"failed\"]}")
+        print(f"Errors: {all_results[\"errors\"]}")
+        print(f"Skipped: {all_results[\"skipped\"]}")
+        print(f"Duration: {all_results[\"duration_seconds\"]/60:.1f} minutes")
         print()
-        print('Category Breakdown:')
-        for cat, stats in all_results['categories'].items():
-            if stats['total'] > 0:
-                cat_pass_rate = (stats['passed'] / stats['total']) * 100
-                print(f'  {cat}: {stats["passed"]}/{stats["total"]} ({cat_pass_rate:.1f}%)')
-        print('=' * 80)
+        print("Category Breakdown:")
+        for cat, stats in all_results["categories"].items():
+            if stats["total"] > 0:
+                cat_pass_rate = (stats["passed"] / stats["total"]) * 100
+                print(f"  {cat}: {stats[\"passed\"]}/{stats[\"total\"]} ({cat_pass_rate:.1f}%)")
+        print("=" * 80)
         
-        # Check success criteria
-        if all_results['pass_rate'] >= 95:
-            print('✅ SUCCESS CRITERIA MET (≥95% pass rate)')
+        if all_results["pass_rate"] >= 95:
+            print("✅ SUCCESS CRITERIA MET (≥95% pass rate)")
         else:
-            print(f'⚠️ SUCCESS CRITERIA NOT MET ({all_results["pass_rate"]:.1f}% < 95%)')
-        EOF
+            print(f"⚠️ SUCCESS CRITERIA NOT MET ({all_results[\"pass_rate\"]:.1f}% < 95%)")
+        '
     
     - name: Upload aggregated results
       if: always()
@@ -189,46 +175,3 @@ jobs:
       with:
         name: aggregated-test-results
         path: aggregated_results.json
-    
-    - name: Create job summary
-      if: always()
-      run: |
-        python << 'EOF'
-        import json
-        import os
-        
-        if os.path.exists('aggregated_results.json'):
-            with open('aggregated_results.json') as f:
-                results = json.load(f)
-            
-            summary = f'''# 🚀 Parallel Test Suite Results
-
-## Overall Statistics
-- **Parallel Jobs:** {results['parallel_jobs']}
-- **Total Tests:** {results['total_tests']}
-- **Passed:** ✅ {results['passed']} ({results['pass_rate']:.1f}%)
-- **Failed:** ❌ {results['failed']}
-- **Errors:** ⚠️ {results['errors']}
-- **Skipped:** ⏭️ {results['skipped']}
-- **Duration:** ⏱️ {results['duration_seconds']/60:.1f} minutes
-
-## Category Results
-'''
-            
-            for cat, stats in results['categories'].items():
-                if stats['total'] > 0:
-                    cat_pass_rate = (stats['passed'] / stats['total']) * 100
-                    icon = '✅' if cat_pass_rate >= 95 else '⚠️'
-                    summary += f'- {icon} **{cat.upper()}:** {stats["passed"]}/{stats["total"]} ({cat_pass_rate:.1f}%)\n'
-            
-            summary += f'''
-## Success Criteria
-{'✅ **PASSED** - Test suite meets 95% pass rate threshold' if results['pass_rate'] >= 95 else '⚠️ **FAILED** - Test suite below 95% pass rate threshold'}
-'''
-            
-            # Write to GitHub step summary
-            with open(os.environ['GITHUB_STEP_SUMMARY'], 'w') as f:
-                f.write(summary)
-            
-            print(summary)
-        EOF
