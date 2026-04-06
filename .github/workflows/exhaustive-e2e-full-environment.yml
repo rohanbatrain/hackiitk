@@ -128,6 +128,9 @@ jobs:
           from datetime import datetime, timezone
           from pathlib import Path
 
+          MAX_SKIP_REASON_LENGTH = 180
+          MAX_BOTTLENECK_ENTRIES = 20
+
           out_dir = Path("test_outputs")
           out_dir.mkdir(exist_ok=True)
 
@@ -150,17 +153,18 @@ jobs:
           passed = summary.get("passed", 0)
           failed = summary.get("failed", 0)
           # pytest-json-report can emit either "error" or "errors" depending on version
-          errors = summary.get("error", 0) + summary.get("errors", 0)
+          error_count = summary.get("error", 0) + summary.get("errors", 0)
           skipped = summary.get("skipped", 0)
           xfailed = summary.get("xfailed", 0)
           xpassed = summary.get("xpassed", 0)
-          total_accounted = passed + failed + errors + skipped + xfailed + xpassed
+          total_accounted = passed + failed + error_count + skipped + xfailed + xpassed
           pass_rate = (passed / total_accounted * 100.0) if total_accounted else 0.0
 
           by_suite = Counter()
           status_by_suite = defaultdict(Counter)
           for t in tests:
               nodeid = t.get("nodeid", "")
+              # Expected nodeid format: tests/<suite_name>/...::test_name
               nodeid_parts = nodeid.split("/")
               suite = nodeid_parts[1] if nodeid.startswith("tests/") and len(nodeid_parts) > 1 else "other"
               by_suite[suite] += 1
@@ -172,7 +176,7 @@ jobs:
                   msg = (t.get("call", {}) or {}).get("longrepr", "")
                   if isinstance(msg, str):
                       m = re.search(r"Skipped:\s*(.*)", msg)
-                      skip_reasons[(m.group(1).strip() if m else msg.strip())[:180]] += 1
+                      skip_reasons[(m.group(1).strip() if m else msg.strip())[:MAX_SKIP_REASON_LENGTH]] += 1
 
           collect_total = 0
           if collect_log.exists():
@@ -201,7 +205,7 @@ jobs:
                           continue
                       if "s " in l and "::" in l:
                           bottlenecks.append(l.strip())
-                      if len(bottlenecks) >= 20:
+                      if len(bottlenecks) >= MAX_BOTTLENECK_ENTRIES:
                           break
 
           missing_requirements = []
@@ -228,7 +232,7 @@ jobs:
           lines.append(f"- Tests accounted in execution: {total_accounted}")
           lines.append(f"- Passed: {passed}")
           lines.append(f"- Failed: {failed}")
-          lines.append(f"- Errors: {errors}")
+          lines.append(f"- Errors: {error_count}")
           lines.append(f"- Skipped: {skipped}")
           lines.append(f"- XFailed/XPassed: {xfailed}/{xpassed}")
           lines.append(f"- Pass rate: {pass_rate:.2f}%")
@@ -258,10 +262,10 @@ jobs:
           lines.append("")
           lines.append("## Failures and Issues")
           lines.append("")
-          if failed == 0 and errors == 0:
+          if failed == 0 and error_count == 0:
               lines.append("- No failing/error tests reported by pytest execution.")
           else:
-              lines.append(f"- {failed} failed tests and {errors} error tests detected.")
+              lines.append(f"- {failed} failed tests and {error_count} error tests detected.")
               lines.append("- See `test_outputs/pytest-console.log` and `test_outputs/junit-all.xml` for full failure traces.")
           lines.append("")
           lines.append("## Bottlenecks (slowest tests)")
