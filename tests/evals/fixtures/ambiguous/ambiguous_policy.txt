@@ -1,0 +1,2 @@
+Security controls should be applied where appropriate.
+Teams may assess risk periodically.

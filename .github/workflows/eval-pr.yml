@@ -1,0 +1,41 @@
+name: Eval PR Gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: schemas
+            model: qwen2.5:3b
+            shard: 0
+            repeat: 0
+            runner: ubuntu-latest
+          - suite: failure_paths
+            model: qwen2.5:3b
+            shard: 0
+            repeat: 0
+            runner: ubuntu-latest
+          - suite: determinism
+            model: qwen2.5:3b
+            shard: 0
+            repeat: 1
+            runner: ubuntu-latest
+    uses: ./.github/workflows/eval-reusable-shard.yml
+    with:
+      suite: ${{ matrix.suite }}
+      model: ${{ matrix.model }}
+      shard: ${{ matrix.shard }}
+      repeat: ${{ matrix.repeat }}
+      runner: ${{ matrix.runner }}
+
+  aggregate:
+    needs: gate
+    if: always()
+    uses: ./.github/workflows/eval-aggregate.yml
+    with:
+      gating_mode: true

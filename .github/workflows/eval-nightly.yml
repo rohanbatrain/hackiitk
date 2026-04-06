@@ -1,0 +1,30 @@
+name: Eval Nightly Matrix
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  nightly:
+    strategy:
+      fail-fast: false
+      matrix:
+        model: [qwen2.5:3b, qwen2.5:7b, gemma2:2b, gemma2:7b, llama3.2:3b, mistral:7b, phi3.5:3.8b]
+        suite: [e2e, regression, determinism, schemas, failure_paths]
+        shard: [0, 1]
+        repeat: [0, 1]
+    uses: ./.github/workflows/eval-reusable-shard.yml
+    with:
+      suite: ${{ matrix.suite }}
+      model: ${{ matrix.model }}
+      shard: ${{ matrix.shard }}
+      repeat: ${{ matrix.repeat }}
+      runner: ubuntu-latest
+
+  aggregate:
+    needs: nightly
+    if: always()
+    uses: ./.github/workflows/eval-aggregate.yml
+    with:
+      gating_mode: false

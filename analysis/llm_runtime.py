@@ -11,6 +11,10 @@ import psutil
 import warnings
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
+from collections import Counter
+
+from jsonschema import validate as jsonschema_validate
+from jsonschema import ValidationError as JsonSchemaValidationError
 
 
 @dataclass
@@ -64,6 +68,7 @@ class LLMRuntime:
         self.memory_threshold = memory_threshold
         self._llm = None
         self._is_loaded = False
+        self.last_structured_generation_metadata: Dict[str, Any] = {}
         
         # Load the model
         self._load_model()
@@ -248,8 +253,12 @@ The JSON must conform to this schema:
 
 JSON Response:"""
         
-        last_error = None
+        last_error: Optional[Exception] = None
+        attempt_errors: List[Dict[str, Any]] = []
+        attempts_used = 0
+
         for attempt in range(max_retries):
+            attempts_used = attempt + 1
             try:
                 # Generate response
                 response = self.generate(
@@ -260,38 +269,60 @@ JSON Response:"""
                 )
                 
                 # Extract JSON from response (handle markdown code blocks)
-                json_text = response.strip()
-                if json_text.startswith("```json"):
-                    json_text = json_text[7:]
-                if json_text.startswith("```"):
-                    json_text = json_text[3:]
-                if json_text.endswith("```"):
-                    json_text = json_text[:-3]
-                json_text = json_text.strip()
+                json_text = self._extract_json_text(response)
                 
                 # Parse JSON
                 result = json.loads(json_text)
-                
-                # Basic schema validation (check required keys)
-                if "properties" in schema:
-                    required_keys = schema.get("required", [])
-                    missing_keys = [k for k in required_keys if k not in result]
-                    if missing_keys:
-                        raise ValueError(f"Missing required keys: {missing_keys}")
+
+                # Strict JSON schema validation
+                jsonschema_validate(instance=result, schema=schema)
+
+                self.last_structured_generation_metadata = {
+                    "success": True,
+                    "attempts_used": attempts_used,
+                    "retry_count": attempts_used - 1,
+                    "error_taxonomy": dict(Counter(err["error_type"] for err in attempt_errors)),
+                    "attempt_errors": attempt_errors
+                }
                 
                 return result
                 
-            except (json.JSONDecodeError, ValueError) as e:
+            except (json.JSONDecodeError, JsonSchemaValidationError, ValueError) as e:
                 last_error = e
+                attempt_errors.append({
+                    "attempt": attempt + 1,
+                    "error_type": type(e).__name__,
+                    "error_message": str(e)
+                })
                 if attempt < max_retries - 1:
                     # Retry with stricter prompt
                     json_prompt = f"{json_prompt}\n\nPrevious attempt failed. Ensure you output ONLY valid JSON."
                 continue
-        
+
+        self.last_structured_generation_metadata = {
+            "success": False,
+            "attempts_used": attempts_used,
+            "retry_count": max(0, attempts_used - 1),
+            "error_taxonomy": dict(Counter(err["error_type"] for err in attempt_errors)),
+            "attempt_errors": attempt_errors
+        }
+
         raise RuntimeError(
             f"Failed to generate valid JSON after {max_retries} attempts. "
             f"Last error: {last_error}"
         )
+
+    @staticmethod
+    def _extract_json_text(response: str) -> str:
+        """Extract raw JSON text from an LLM response."""
+        json_text = response.strip()
+        if json_text.startswith("```json"):
+            json_text = json_text[7:]
+        if json_text.startswith("```"):
+            json_text = json_text[3:]
+        if json_text.endswith("```"):
+            json_text = json_text[:-3]
+        return json_text.strip()
     
     def check_memory(self) -> float:
         """
