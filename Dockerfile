@@ -53,20 +53,8 @@ CMD ["python", "-m", "tests.extreme.cli", "test", "--fast", "--verbose"]
 # Stage 4: CI-optimized image (smaller, faster)
 FROM dependencies as ci
 
-# Copy only necessary files for testing
-COPY tests/ tests/
-COPY analysis/ analysis/
-COPY cli/ cli/
-COPY ingestion/ ingestion/
-COPY models/ models/
-COPY orchestration/ orchestration/
-COPY reference_builder/ reference_builder/
-COPY reporting/ reporting/
-COPY retrieval/ retrieval/
-COPY revision/ revision/
-COPY utils/ utils/
-COPY vector_store/ vector_store/
-COPY pyproject.toml ./
+# Copy application code (excluding items in .dockerignore)
+COPY . .
 
 # Create output directories
 RUN mkdir -p test_outputs/extreme test_outputs/coverage
