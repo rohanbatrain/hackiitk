@@ -1,0 +1,20 @@
+# Dependency constraints for GitHub Actions
+# Fixes "resolution-too-deep" errors
+
+# Core dependencies with version constraints
+chromadb>=0.5.0,<1.0.0
+sentence-transformers>=2.2.0,<6.0.0
+langchain>=0.1.0,<0.4.0
+langchain-community>=0.1.0,<0.4.0
+langchain-ollama>=0.1.0,<0.4.0
+
+# Testing dependencies
+hypothesis>=6.90.0,<7.0.0
+pytest>=7.4.0,<9.0.0
+pytest-cov>=4.1.0,<8.0.0
+
+# Transitive dependencies with constraints
+tenacity>=8.2.3,<10.0.0
+numpy>=1.24.0,<2.0.0
+pydantic>=2.0.0,<3.0.0
+httpx>=0.24.0,<1.0.0
