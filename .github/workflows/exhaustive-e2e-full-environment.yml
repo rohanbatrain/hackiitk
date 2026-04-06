@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "0 3 * * 0"
 
+permissions:
+  contents: read
+
 jobs:
   exhaustive-e2e:
     name: Full setup + exhaustive tests + comprehensive report
@@ -221,7 +224,7 @@ jobs:
           lines.append(f"- Failed: {failed}")
           lines.append(f"- Errors: {errors}")
           lines.append(f"- Skipped: {skipped}")
-          lines.append(f"- XFailed/XPased: {xfailed}/{xpassed}")
+          lines.append(f"- XFailed/XPassed: {xfailed}/{xpassed}")
           lines.append(f"- Pass rate: {pass_rate:.2f}%")
           lines.append("")
           lines.append("### Coverage by test suite")
