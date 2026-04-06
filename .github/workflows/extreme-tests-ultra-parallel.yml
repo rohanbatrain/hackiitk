@@ -96,7 +96,10 @@ jobs:
         with open('matrix.json', 'w') as f:
             json.dump(matrix, f)
         
-        print(f'::set-output name=matrix::{json.dumps(matrix)}')
+        # Use environment file instead of set-output
+        import os
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f'matrix={json.dumps(matrix)}\n')
         "
     
     - name: Upload matrix
