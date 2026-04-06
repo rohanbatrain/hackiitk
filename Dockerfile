@@ -24,9 +24,8 @@ FROM base as dependencies
 # Copy dependency files
 COPY requirements.txt requirements-frozen.txt constraints.txt ./
 
-# Install dependencies using uv (with fallback to frozen requirements)
-RUN uv pip install --system --constraint constraints.txt -r requirements.txt || \
-    pip install --constraint constraints.txt -r requirements.txt
+# Install dependencies using uv (better dependency resolution than pip)
+RUN uv pip install --system -r requirements.txt
 
 # Verify critical dependencies
 RUN python -c "import langchain; import chromadb; import sentence_transformers; print('✓ All dependencies installed')"
