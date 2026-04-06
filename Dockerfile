@@ -55,8 +55,18 @@ FROM dependencies as ci
 
 # Copy only necessary files for testing
 COPY tests/ tests/
-COPY src/ src/
-COPY pyproject.toml pytest.ini .coveragerc ./
+COPY analysis/ analysis/
+COPY cli/ cli/
+COPY ingestion/ ingestion/
+COPY models/ models/
+COPY orchestration/ orchestration/
+COPY reference_builder/ reference_builder/
+COPY reporting/ reporting/
+COPY retrieval/ retrieval/
+COPY revision/ revision/
+COPY utils/ utils/
+COPY vector_store/ vector_store/
+COPY pyproject.toml .coveragerc ./
 
 # Create output directories
 RUN mkdir -p test_outputs/extreme test_outputs/coverage
