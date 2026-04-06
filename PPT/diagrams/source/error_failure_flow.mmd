@@ -1,0 +1,9 @@
+flowchart TD
+    A[Start Analysis] --> B{Input valid?}
+    B -- no --> E1[Exit with user-facing error]
+    B -- yes --> C{Resources init ok?}
+    C -- no --> E2[RuntimeError from pipeline init]
+    C -- yes --> D{Parse/chunk/embed/analyze success?}
+    D -- no --> E3[Pipeline failure + logged exception]
+    D -- yes --> F[Generate outputs + audit]
+    F --> G[Success summary]

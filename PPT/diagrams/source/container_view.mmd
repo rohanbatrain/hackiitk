@@ -1,0 +1,28 @@
+flowchart TB
+    subgraph Process[Python Process]
+      CLI[CLI]
+      PIPE[Pipeline Orchestrator]
+      CORE[Core Modules\ningestion/retrieval/analysis/revision/reporting]
+    end
+
+    subgraph Data[Local Data Stores]
+      CAT[Reference Catalog JSON]
+      VDB[Chroma Vector Store]
+      OUT[Output Directories]
+      AUD[Audit Logs]
+    end
+
+    subgraph ModelRuntime[Model Runtime]
+      EMB[SentenceTransformer]
+      LLM[Ollama or llama.cpp]
+      RER[Cross-Encoder Reranker]
+    end
+
+    CLI --> PIPE --> CORE
+    CORE --> CAT
+    CORE --> VDB
+    CORE --> OUT
+    CORE --> AUD
+    CORE --> EMB
+    CORE --> LLM
+    CORE --> RER

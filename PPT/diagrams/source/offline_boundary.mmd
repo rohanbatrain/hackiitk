@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph Local_Host[Local Host Boundary]
+      CLI[CLI + Pipeline]
+      EMB[Local Embedding Model Files]
+      VS[Chroma Persistent Store]
+      LLM[Ollama localhost or llama.cpp local file]
+      OUT[Local Output Files + Audit Logs]
+    end
+
+    subgraph Internet[External Network]
+      DL[Model Download Sources\nsetup phase only]
+    end
+
+    DL -. setup-time only .-> EMB
+    DL -. setup-time only .-> LLM
+
+    CLI --> EMB
+    CLI --> VS
+    CLI --> LLM
+    CLI --> OUT

@@ -1,0 +1,8 @@
+flowchart TB
+    IN[Policy Input File] --> P[Pipeline]
+    P --> V1[Vector Store: catalog collection]
+    P --> V2[Vector Store: policy collection]
+    P --> O1[gap_analysis_report.md/json]
+    P --> O2[revised_policy.md]
+    P --> O3[implementation_roadmap.md/json]
+    P --> A[audit_logs/audit_*.json]

@@ -1,0 +1,7 @@
+flowchart LR
+    DEV[Developer/CI] --> T1[pytest tests/...]
+    DEV --> T2[python -m tests.extreme.cli ...]
+    T1 --> R1[Test Reports/Artifacts]
+    T2 --> R2[Extreme Test Artifacts]
+    CI[GitHub Workflows] --> T1
+    CI --> T2

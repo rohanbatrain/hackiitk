@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant User
+    participant CLI as cli/main.py
+    participant Pipeline as AnalysisPipeline
+    participant Ingest as ingestion/*
+    participant Catalog as ReferenceCatalog
+    participant Retrieval as retrieval/*
+    participant StageA as StageADetector
+    participant StageB as StageBReasoner
+    participant Revision as PolicyRevisionEngine
+    participant Reporting as reporting/*
+
+    User->>CLI: run with --policy-path
+    CLI->>Pipeline: execute(policy_path, domain, output_dir)
+    Pipeline->>Pipeline: initialize_resources()
+    Pipeline->>Ingest: parse document
+    Pipeline->>Ingest: chunk text
+    Pipeline->>Retrieval: embed policy chunks + store
+    Pipeline->>Catalog: load/get subcategories
+    Pipeline->>StageA: deterministic assessments
+    StageA-->>Pipeline: coverage assessments
+    Pipeline->>StageB: reason on unresolved statuses
+    StageB-->>Pipeline: gap details
+    Pipeline->>Revision: generate revised policy
+    Pipeline->>Reporting: generate reports + roadmap + audit log
+    Pipeline-->>CLI: AnalysisResult
+    CLI-->>User: summary + output paths

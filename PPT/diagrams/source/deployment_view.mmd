@@ -1,0 +1,9 @@
+flowchart LR
+    DevLaptop[Workstation/Server Node] --> PythonEnv[Python Runtime + Dependencies]
+    DevLaptop --> OllamaSvc[Ollama Service localhost]
+    DevLaptop --> ModelFiles[Local Model Files]
+    DevLaptop --> Repo[Repository Checkout]
+
+    Repo --> PythonEnv
+    PythonEnv --> OllamaSvc
+    PythonEnv --> ModelFiles

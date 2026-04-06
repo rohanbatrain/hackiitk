@@ -1,0 +1,24 @@
+flowchart TD
+    A[Policy File] --> B[DocumentParser]
+    B --> C[ParsedDocument]
+    C --> D[TextChunker]
+    D --> E[TextChunks]
+    E --> F[EmbeddingEngine]
+    F --> G[VectorStore: policy collection]
+
+    H[ReferenceCatalog subcategories] --> I[HybridRetriever]
+    G --> I
+    I --> J[Stage A scoring/classification]
+    J --> K{covered?}
+    K -- yes --> L[covered_subcategories]
+    K -- no --> M[Stage B constrained LLM reasoning]
+    M --> N[GapDetail list]
+
+    L --> O[GapAnalysisReport]
+    N --> O
+    O --> P[PolicyRevisionEngine]
+    O --> Q[RoadmapGenerator]
+    P --> R[revised_policy.md]
+    Q --> S[implementation_roadmap.md/json]
+    O --> T[gap_analysis_report.md/json]
+    O --> U[AuditLogger entry]

@@ -1,0 +1,6 @@
+flowchart LR
+    CF1[config.example.yaml\nflat schema] --> CL[ConfigLoader]
+    CF2[config.yaml\nnested schema] -. mismatch risk .-> CL
+    CL --> PC[PipelineConfig]
+    CLI[CLI args] --> PC
+    PC --> PIPE[AnalysisPipeline]
