@@ -50,7 +50,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: property-test-results
         path: test_outputs/extreme/*
@@ -81,7 +81,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: boundary-test-results
         path: test_outputs/extreme/*
@@ -113,7 +113,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: adversarial-test-results
         path: test_outputs/extreme/*
@@ -121,7 +121,7 @@ jobs:
   # Full suite - highly parallelized by individual test engines
   stress-maximum-load:
     name: Stress - Maximum Load
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'stress-only'
     timeout-minutes: 60
     
@@ -146,14 +146,14 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: stress-maximum-load-results
         path: test_outputs/extreme/*
 
   stress-concurrent-operations:
     name: Stress - Concurrent Operations
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'stress-only'
     timeout-minutes: 60
     
@@ -177,14 +177,14 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: stress-concurrent-results
         path: test_outputs/extreme/*
 
   stress-resource-leaks:
     name: Stress - Resource Leak Detection
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'stress-only'
     timeout-minutes: 60
     
@@ -209,7 +209,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: stress-resource-leak-results
         path: test_outputs/extreme/*
@@ -240,7 +240,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: chaos-disk-results
         path: test_outputs/extreme/*
@@ -271,7 +271,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: chaos-memory-results
         path: test_outputs/extreme/*
@@ -302,7 +302,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: chaos-model-results
         path: test_outputs/extreme/*
@@ -333,7 +333,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: chaos-interruption-results
         path: test_outputs/extreme/*
@@ -365,7 +365,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: chaos-permissions-results
         path: test_outputs/extreme/*
@@ -396,14 +396,14 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: chaos-vectorstore-results
         path: test_outputs/extreme/*
 
   performance-document-scaling:
     name: Performance - Document Size Scaling
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
     timeout-minutes: 60
     
@@ -427,14 +427,14 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-document-results
         path: test_outputs/extreme/*
 
   performance-chunk-scaling:
     name: Performance - Chunk Count Scaling
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
     timeout-minutes: 60
     
@@ -458,14 +458,14 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-chunk-results
         path: test_outputs/extreme/*
 
   performance-llm-context:
     name: Performance - LLM Context Scaling
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
     timeout-minutes: 60
     
@@ -489,14 +489,14 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-llm-results
         path: test_outputs/extreme/*
 
   performance-bottlenecks:
     name: Performance - Bottleneck Identification
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
     timeout-minutes: 60
     
@@ -521,14 +521,14 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-bottleneck-results
         path: test_outputs/extreme/*
     
     - name: Upload baselines
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-baselines
         path: coverage_baselines/*.json
@@ -560,7 +560,7 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: all-test-results
     
@@ -616,7 +616,7 @@ jobs:
         "
     
     - name: Upload aggregated results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: aggregated-test-results
         path: aggregated_results.json

@@ -100,7 +100,7 @@ jobs:
         "
     
     - name: Upload matrix
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-matrix
         path: matrix.json
@@ -108,7 +108,7 @@ jobs:
   # Run tests in ultra-parallel mode
   run-tests:
     name: ${{ matrix.category }} - Chunk ${{ matrix.chunk_id }}
-    runs-on: ${{ matrix.category == 'stress' || matrix.category == 'performance' && 'ubuntu-latest-8-cores' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.category == 'stress' || matrix.category == 'performance' && 'ubuntu-latest' || 'ubuntu-latest' }}
     needs: generate-matrix
     timeout-minutes: ${{ matrix.timeout }}
     continue-on-error: true
@@ -145,7 +145,7 @@ jobs:
     
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.category }}-${{ matrix.chunk_id }}
         path: |
@@ -163,7 +163,7 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: all-test-results
     
@@ -271,7 +271,7 @@ jobs:
     
     - name: Upload aggregated results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ultra-parallel-aggregated-results
         path: ultra_parallel_results.json
