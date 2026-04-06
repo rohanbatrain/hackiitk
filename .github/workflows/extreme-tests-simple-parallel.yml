@@ -43,6 +43,11 @@ jobs:
     - name: Verify dependencies
       run: |
         python -c "import langchain; import chromadb; import sentence_transformers; print('✓ All dependencies available')"
+        echo "Current directory: $(pwd)"
+        echo "Test files:"
+        ls -la tests/extreme/ | head -20
+        echo "Property test files:"
+        find tests -name "*propert*" -type f | head -10
     
     - name: Run ${{ matrix.category }} tests
       run: |
