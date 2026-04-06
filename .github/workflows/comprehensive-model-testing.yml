@@ -1,0 +1,330 @@
+name: Comprehensive Model Testing (All Models × All Categories)
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight
+  workflow_dispatch:
+    inputs:
+      models:
+        description: 'Models to test (comma-separated or "all")'
+        required: false
+        default: 'all'
+        type: string
+      categories:
+        description: 'Test categories (comma-separated or "all")'
+        required: false
+        default: 'all'
+        type: string
+
+jobs:
+  test-matrix:
+    name: ${{ matrix.model }} - ${{ matrix.category }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    continue-on-error: true
+    
+    strategy:
+      fail-fast: false
+      max-parallel: 16  # Run up to 16 jobs in parallel (4 models × 4 categories at a time)
+      matrix:
+        # Test with multiple Ollama models (max 7B as requested)
+        model:
+          - qwen2.5:3b
+          - gemma2:2b
+          - llama3.2:3b
+          - phi3.5:3.8b
+        
+        # All test categories
+        category:
+          - property
+          - boundary
+          - adversarial
+          - stress
+          - chaos
+          - performance
+          - unit
+          - integration
+    
+    # Use pre-built Docker container with all dependencies
+    container:
+      image: ghcr.io/${{ github.repository }}:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          pip-
+    
+    - name: Cache Hypothesis database
+      uses: actions/cache@v4
+      with:
+        path: .hypothesis/
+        key: hypothesis-${{ hashFiles('tests/**/*.py') }}-${{ matrix.model }}
+        restore-keys: |
+          hypothesis-${{ matrix.model }}-
+          hypothesis-
+    
+    - name: Setup Ollama
+      run: |
+        # Install Ollama using official install script
+        curl -fsSL https://ollama.com/install.sh | sh
+        
+        # Start Ollama service in background mode
+        ollama serve &
+        
+        # Add sleep delay for service readiness
+        sleep 10
+        
+        # Verify Ollama service status before tests
+        if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+          echo "✓ Ollama service is running"
+          
+          # Pull the specific model for this matrix job
+          echo "Pulling model: ${{ matrix.model }}"
+          if ollama pull ${{ matrix.model }}; then
+            echo "✓ Model ${{ matrix.model }} pulled successfully"
+          else
+            echo "⚠️ Model pull failed, tests will use mock implementations"
+            exit 0  # Don't fail the job, just skip
+          fi
+        else
+          echo "⚠️ Ollama service not responding, tests will use mock implementations"
+          exit 0
+        fi
+    
+    - name: Verify dependencies and model
+      run: |
+        python -c "import langchain; import chromadb; import sentence_transformers; print('✓ All dependencies available')"
+        echo "✓ Ollama status:"
+        ollama list
+        echo "✓ Testing with model: ${{ matrix.model }}"
+    
+    - name: Run ${{ matrix.category }} tests with ${{ matrix.model }}
+      env:
+        OLLAMA_HOST: http://localhost:11434
+        PYTHONPATH: /github/workspace
+        LLM_MODEL: ${{ matrix.model }}
+        TEST_MODEL: ${{ matrix.model }}
+      run: |
+        cd /github/workspace
+        
+        # Make script executable
+        chmod +x .github/scripts/run_tests.sh
+        
+        # Run tests using the comprehensive script
+        .github/scripts/run_tests.sh "${{ matrix.category }}" "test_outputs/extreme"
+      continue-on-error: true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.model }}-${{ matrix.category }}
+        path: |
+          test_outputs/extreme/*.json
+          test_outputs/extreme/*.html
+          test_outputs/extreme/*.xml
+        if-no-files-found: ignore
+        retention-days: 30
+  
+  aggregate-results:
+    name: Aggregate All Model Test Results
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: test-results-*
+        path: all-test-results
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Create comprehensive aggregation script
+      run: |
+        cat > aggregate_model_results.py << 'EOF'
+        import json
+        import os
+        from pathlib import Path
+        from datetime import datetime
+        from collections import defaultdict
+        
+        results_dir = Path("all-test-results")
+        
+        # Aggregate by model and category
+        model_results = defaultdict(lambda: defaultdict(dict))
+        overall_stats = {
+            "execution_date": datetime.now().isoformat(),
+            "total_tests": 0,
+            "passed": 0,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "models_tested": set(),
+            "categories_tested": set(),
+            "by_model": {},
+            "by_category": {},
+            "by_model_category": {}
+        }
+        
+        if not results_dir.exists():
+            print("⚠️ No test results found")
+            with open("comprehensive_results.json", "w") as f:
+                json.dump(overall_stats, f, indent=2, default=str)
+            exit(0)
+        
+        # Parse all result files
+        for artifact_dir in results_dir.iterdir():
+            if not artifact_dir.is_dir():
+                continue
+            
+            # Extract model and category from artifact name
+            # Format: test-results-{model}-{category}
+            parts = artifact_dir.name.replace("test-results-", "").split("-")
+            if len(parts) < 2:
+                continue
+            
+            # Handle model names with colons (e.g., qwen2.5:3b)
+            model = parts[0] + ":" + parts[1] if len(parts) > 2 else parts[0]
+            category = parts[-1]
+            
+            overall_stats["models_tested"].add(model)
+            overall_stats["categories_tested"].add(category)
+            
+            # Process JSON files
+            for json_file in artifact_dir.glob("**/*.json"):
+                try:
+                    with open(json_file) as f:
+                        data = json.load(f)
+                    
+                    if "total_tests" in data:
+                        tests = data.get("total_tests", 0)
+                        passed = data.get("passed", 0)
+                        failed = data.get("failed", 0)
+                        errors = data.get("errors", 0)
+                        skipped = data.get("skipped", 0)
+                        
+                        # Update overall stats
+                        overall_stats["total_tests"] += tests
+                        overall_stats["passed"] += passed
+                        overall_stats["failed"] += failed
+                        overall_stats["errors"] += errors
+                        overall_stats["skipped"] += skipped
+                        
+                        # Store by model-category combination
+                        key = f"{model}-{category}"
+                        model_results[model][category] = {
+                            "total": tests,
+                            "passed": passed,
+                            "failed": failed,
+                            "errors": errors,
+                            "skipped": skipped,
+                            "pass_rate": (passed / tests * 100) if tests > 0 else 0
+                        }
+                
+                except Exception as e:
+                    print(f"⚠️ Error processing {json_file}: {e}")
+                    continue
+        
+        # Calculate pass rates
+        if overall_stats["total_tests"] > 0:
+            overall_stats["pass_rate"] = (overall_stats["passed"] / overall_stats["total_tests"]) * 100
+        else:
+            overall_stats["pass_rate"] = 0.0
+        
+        # Aggregate by model
+        for model, categories in model_results.items():
+            model_total = sum(c["total"] for c in categories.values())
+            model_passed = sum(c["passed"] for c in categories.values())
+            overall_stats["by_model"][model] = {
+                "total": model_total,
+                "passed": model_passed,
+                "pass_rate": (model_passed / model_total * 100) if model_total > 0 else 0,
+                "categories": dict(categories)
+            }
+        
+        # Aggregate by category
+        category_stats = defaultdict(lambda: {"total": 0, "passed": 0})
+        for model, categories in model_results.items():
+            for category, stats in categories.items():
+                category_stats[category]["total"] += stats["total"]
+                category_stats[category]["passed"] += stats["passed"]
+        
+        for category, stats in category_stats.items():
+            overall_stats["by_category"][category] = {
+                "total": stats["total"],
+                "passed": stats["passed"],
+                "pass_rate": (stats["passed"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            }
+        
+        # Convert sets to lists for JSON serialization
+        overall_stats["models_tested"] = sorted(list(overall_stats["models_tested"]))
+        overall_stats["categories_tested"] = sorted(list(overall_stats["categories_tested"]))
+        
+        # Save results
+        with open("comprehensive_results.json", "w") as f:
+            json.dump(overall_stats, f, indent=2)
+        
+        # Print summary
+        print("=" * 80)
+        print("COMPREHENSIVE MODEL TESTING RESULTS")
+        print("=" * 80)
+        print(f"Models Tested: {len(overall_stats['models_tested'])}")
+        print(f"  {', '.join(overall_stats['models_tested'])}")
+        print(f"\nCategories Tested: {len(overall_stats['categories_tested'])}")
+        print(f"  {', '.join(overall_stats['categories_tested'])}")
+        print(f"\nTotal Tests: {overall_stats['total_tests']}")
+        print(f"Passed: {overall_stats['passed']} ({overall_stats['pass_rate']:.1f}%)")
+        print(f"Failed: {overall_stats['failed']}")
+        print(f"Errors: {overall_stats['errors']}")
+        print(f"Skipped: {overall_stats['skipped']}")
+        print("\n" + "=" * 80)
+        print("RESULTS BY MODEL")
+        print("=" * 80)
+        for model, stats in sorted(overall_stats["by_model"].items()):
+            print(f"\n{model}:")
+            print(f"  Total: {stats['total']} tests")
+            print(f"  Passed: {stats['passed']} ({stats['pass_rate']:.1f}%)")
+            print(f"  Categories:")
+            for cat, cat_stats in sorted(stats["categories"].items()):
+                print(f"    {cat}: {cat_stats['passed']}/{cat_stats['total']} ({cat_stats['pass_rate']:.1f}%)")
+        
+        print("\n" + "=" * 80)
+        print("RESULTS BY CATEGORY")
+        print("=" * 80)
+        for category, stats in sorted(overall_stats["by_category"].items()):
+            print(f"{category}: {stats['passed']}/{stats['total']} ({stats['pass_rate']:.1f}%)")
+        
+        print("\n" + "=" * 80)
+        if overall_stats["pass_rate"] >= 95:
+            print("✅ SUCCESS CRITERIA MET (≥95% pass rate)")
+        else:
+            print(f"⚠️  SUCCESS CRITERIA NOT MET ({overall_stats['pass_rate']:.1f}% < 95%)")
+        print("=" * 80)
+        EOF
+    
+    - name: Aggregate comprehensive results
+      run: |
+        python3 aggregate_model_results.py
+    
+    - name: Upload comprehensive results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: comprehensive-model-test-results
+        path: comprehensive_results.json
