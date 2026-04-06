@@ -1,0 +1,29 @@
+# Frozen requirements that work together
+# Generated for Python 3.11 on 2026-04-06
+
+# Core testing
+pytest==7.4.3
+pytest-cov==4.1.0
+hypothesis==6.92.1
+psutil==5.9.6
+
+# Document processing
+PyMuPDF==1.23.8
+pdfplumber==0.10.3
+python-docx==1.1.0
+chardet==5.2.0
+
+# Utilities
+pyyaml==6.0.1
+click==8.1.7
+rich==13.7.0
+tabulate==0.9.0
+jsonschema==4.20.0
+
+# ML/NLP (minimal versions)
+numpy==1.26.2
+rank-bm25==0.2.2
+
+# Langchain (minimal for text splitting)
+langchain-text-splitters==0.0.1
+langchain-core==0.1.10
