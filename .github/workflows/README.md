@@ -4,6 +4,29 @@ This directory contains GitHub Actions workflows for running the comprehensive e
 
 ## Workflows
 
+### 0. Exhaustive End-to-End Full Environment Tests (`exhaustive-e2e-full-environment.yml`)
+
+**Trigger:** Weekly schedule + manual  
+**Duration:** Up to 12 hours  
+**Purpose:** One single workflow that performs full environment setup and then runs all tests exhaustively end-to-end.
+
+**Includes full setup:**
+- Python dependencies install
+- Ollama CLI install and service startup
+- Required Ollama model pulls (`qwen2.5:3b`, `qwen2.5:3b-instruct`, `phi3.5:3.8b-mini-instruct`, `mistral:7b-instruct`)
+- ChromaDB initialization
+- Embedding model setup (`all-MiniLM-L6-v2`)
+
+**Execution and reporting:**
+- Runs `pytest tests` with JUnit + JSON + durations output
+- Generates a comprehensive report with:
+  - coverage overview
+  - pass/fail/error/skip results
+  - suite-level breakdown
+  - bottlenecks (slowest tests)
+  - missing requirements/environment issues
+- Uploads full artifacts for post-run analysis
+
 ### 1. Quick Tests (`quick-tests.yml`)
 
 **Trigger:** Every push and pull request  

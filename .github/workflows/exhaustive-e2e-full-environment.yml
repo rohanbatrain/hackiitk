@@ -1,0 +1,303 @@
+name: Exhaustive End-to-End Full Environment Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 0"
+
+jobs:
+  exhaustive-e2e:
+    name: Full setup + exhaustive tests + comprehensive report
+    runs-on: ubuntu-latest
+    timeout-minutes: 720
+
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OLLAMA_HOST: http://127.0.0.1:11434
+      OLLAMA_MODEL: qwen2.5:3b
+      CHROMA_PERSIST_DIR: ${{ github.workspace }}/chroma_data
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Install Ollama CLI
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama --version
+
+      - name: Start Ollama service
+        run: |
+          nohup ollama serve > ollama.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS "$OLLAMA_HOST/api/tags" >/dev/null 2>&1; then
+              echo "Ollama is ready"
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS "$OLLAMA_HOST/api/tags" >/dev/null
+
+      - name: Pull required Ollama models
+        run: |
+          mkdir -p test_outputs
+          : > test_outputs/model-pull-results.txt
+          for model in \
+            qwen2.5:3b \
+            qwen2.5:3b-instruct \
+            phi3.5:3.8b-mini-instruct \
+            mistral:7b-instruct
+          do
+            echo "Pulling $model"
+            if ollama pull "$model"; then
+              echo "OK $model" | tee -a test_outputs/model-pull-results.txt
+            else
+              echo "FAILED $model" | tee -a test_outputs/model-pull-results.txt
+            fi
+          done
+          ollama list | tee test_outputs/ollama-model-list.txt
+
+      - name: Setup ChromaDB
+        run: |
+          mkdir -p "$CHROMA_PERSIST_DIR"
+          python - << 'PY'
+          import chromadb
+          client = chromadb.PersistentClient(path="chroma_data")
+          client.heartbeat()
+          print("ChromaDB persistent client initialized and healthy")
+          PY
+
+      - name: Setup embedding model
+        run: |
+          mkdir -p models/embeddings
+          python scripts/download_models.py --embedding || true
+          if [ ! -d "models/embeddings/all-MiniLM-L6-v2" ]; then
+            python - << 'PY'
+            from sentence_transformers import SentenceTransformer
+            m = SentenceTransformer("all-MiniLM-L6-v2")
+            m.save("models/embeddings/all-MiniLM-L6-v2")
+            print("Downloaded and saved all-MiniLM-L6-v2")
+            PY
+          fi
+
+      - name: Collect test inventory
+        run: |
+          mkdir -p test_outputs
+          python -m pytest tests --collect-only -q > test_outputs/pytest-collect.log 2>&1 || true
+
+      - name: Run exhaustive test suite
+        run: |
+          mkdir -p test_outputs
+          set +e
+          python -m pytest tests \
+            -v \
+            --tb=short \
+            --continue-on-collection-errors \
+            --durations=50 \
+            --junitxml=test_outputs/junit-all.xml \
+            --json-report \
+            --json-report-file=test_outputs/pytest-report.json \
+            > test_outputs/pytest-console.log 2>&1
+          echo "$?" > test_outputs/test-exit-code.txt
+          set -e
+
+      - name: Build comprehensive test report
+        if: always()
+        run: |
+          python - << 'PY'
+          import json
+          import os
+          import re
+          from collections import Counter, defaultdict
+          from datetime import datetime
+          from pathlib import Path
+
+          out_dir = Path("test_outputs")
+          out_dir.mkdir(exist_ok=True)
+
+          report_json = out_dir / "pytest-report.json"
+          collect_log = out_dir / "pytest-collect.log"
+          console_log = out_dir / "pytest-console.log"
+          model_pull_file = out_dir / "model-pull-results.txt"
+          exit_code_file = out_dir / "test-exit-code.txt"
+
+          data = {}
+          if report_json.exists():
+              try:
+                  data = json.loads(report_json.read_text())
+              except Exception:
+                  data = {}
+
+          summary = data.get("summary", {}) if isinstance(data, dict) else {}
+          tests = data.get("tests", []) if isinstance(data, dict) else []
+          collected = summary.get("collected", len(tests))
+          passed = summary.get("passed", 0)
+          failed = summary.get("failed", 0)
+          errors = summary.get("error", 0) + summary.get("errors", 0)
+          skipped = summary.get("skipped", 0)
+          xfailed = summary.get("xfailed", 0)
+          xpassed = summary.get("xpassed", 0)
+          total_accounted = passed + failed + errors + skipped + xfailed + xpassed
+          pass_rate = (passed / total_accounted * 100.0) if total_accounted else 0.0
+
+          by_suite = Counter()
+          status_by_suite = defaultdict(Counter)
+          for t in tests:
+              nodeid = t.get("nodeid", "")
+              suite = nodeid.split("/")[1] if nodeid.startswith("tests/") and len(nodeid.split("/")) > 1 else "other"
+              by_suite[suite] += 1
+              status_by_suite[suite][t.get("outcome", "unknown")] += 1
+
+          skip_reasons = Counter()
+          for t in tests:
+              if t.get("outcome") == "skipped":
+                  msg = (t.get("call", {}) or {}).get("longrepr", "")
+                  if isinstance(msg, str):
+                      m = re.search(r"Skipped:\s*(.*)", msg)
+                      skip_reasons[(m.group(1).strip() if m else msg.strip())[:180]] += 1
+
+          collect_total = 0
+          if collect_log.exists():
+              text = collect_log.read_text(errors="ignore")
+              m = re.search(r"(\d+)\s+tests?\s+collected", text)
+              if m:
+                  collect_total = int(m.group(1))
+
+          model_pull_lines = model_pull_file.read_text(errors="ignore").splitlines() if model_pull_file.exists() else []
+          model_failed = [line.replace("FAILED ", "", 1) for line in model_pull_lines if line.startswith("FAILED ")]
+          model_ok = [line.replace("OK ", "", 1) for line in model_pull_lines if line.startswith("OK ")]
+
+          bottlenecks = []
+          if console_log.exists():
+              lines = console_log.read_text(errors="ignore").splitlines()
+              try:
+                  idx = lines.index("=================================== slowest durations ===================================")
+                  for l in lines[idx + 1:]:
+                      if not l.strip():
+                          continue
+                      if l.startswith("(") or l.startswith("="):
+                          continue
+                      if "s " in l and "::" in l:
+                          bottlenecks.append(l.strip())
+                      if len(bottlenecks) >= 20:
+                          break
+              except ValueError:
+                  pass
+
+          missing_requirements = []
+          if model_failed:
+              missing_requirements.append(f"Ollama models failed to pull: {', '.join(model_failed)}")
+          if not Path("models/embeddings/all-MiniLM-L6-v2").exists():
+              missing_requirements.append("Embedding model all-MiniLM-L6-v2 missing")
+          if skipped > 0:
+              missing_requirements.append("Some tests skipped due to runtime/environment constraints (see top skip reasons)")
+
+          exit_code = int(exit_code_file.read_text().strip()) if exit_code_file.exists() else 1
+          workflow_status = "PASSED" if exit_code == 0 else "FAILED"
+
+          lines = []
+          lines.append("# Comprehensive Exhaustive Test Report")
+          lines.append("")
+          lines.append(f"- Generated (UTC): {datetime.utcnow().isoformat()}Z")
+          lines.append(f"- Workflow status: **{workflow_status}**")
+          lines.append("")
+          lines.append("## Coverage Overview")
+          lines.append("")
+          lines.append(f"- Tests collected (from collect step): {collect_total or collected}")
+          lines.append(f"- Tests accounted in execution: {total_accounted}")
+          lines.append(f"- Passed: {passed}")
+          lines.append(f"- Failed: {failed}")
+          lines.append(f"- Errors: {errors}")
+          lines.append(f"- Skipped: {skipped}")
+          lines.append(f"- XFailed/XPased: {xfailed}/{xpassed}")
+          lines.append(f"- Pass rate: {pass_rate:.2f}%")
+          lines.append("")
+          lines.append("### Coverage by test suite")
+          lines.append("")
+          lines.append("| Suite | Count | Passed | Failed | Error | Skipped |")
+          lines.append("|---|---:|---:|---:|---:|---:|")
+          for suite in sorted(by_suite.keys()):
+              c = status_by_suite[suite]
+              lines.append(f"| {suite} | {by_suite[suite]} | {c.get('passed',0)} | {c.get('failed',0)} | {c.get('error',0)+c.get('errors',0)} | {c.get('skipped',0)} |")
+          lines.append("")
+          lines.append("## Environment Setup Results")
+          lines.append("")
+          lines.append(f"- Ollama models pulled successfully: {', '.join(model_ok) if model_ok else 'None'}")
+          lines.append(f"- Ollama models failed to pull: {', '.join(model_failed) if model_failed else 'None'}")
+          lines.append(f"- ChromaDB setup: {'OK' if Path('chroma_data').exists() else 'Not initialized'}")
+          lines.append(f"- Embedding model setup: {'OK' if Path('models/embeddings/all-MiniLM-L6-v2').exists() else 'Missing'}")
+          lines.append("")
+          lines.append("## Failures and Issues")
+          lines.append("")
+          if failed == 0 and errors == 0:
+              lines.append("- No failing/error tests reported by pytest execution.")
+          else:
+              lines.append(f"- {failed} failed tests and {errors} error tests detected.")
+              lines.append("- See `test_outputs/pytest-console.log` and `test_outputs/junit-all.xml` for full failure traces.")
+          lines.append("")
+          lines.append("## Bottlenecks (slowest tests)")
+          lines.append("")
+          if bottlenecks:
+              for b in bottlenecks:
+                  lines.append(f"- {b}")
+          else:
+              lines.append("- No slow-test breakdown captured.")
+          lines.append("")
+          lines.append("## Missing Requirements / Constraints")
+          lines.append("")
+          if missing_requirements:
+              for m in missing_requirements:
+                  lines.append(f"- {m}")
+          else:
+              lines.append("- None detected during setup and execution.")
+          lines.append("")
+          lines.append("## Top Skip Reasons")
+          lines.append("")
+          if skip_reasons:
+              for reason, count in skip_reasons.most_common(10):
+                  lines.append(f"- ({count}) {reason}")
+          else:
+              lines.append("- No skipped tests.")
+
+          report_md = out_dir / "COMPREHENSIVE_TEST_REPORT.md"
+          report_md.write_text("\n".join(lines))
+          print(report_md.read_text())
+          PY
+
+      - name: Publish report in GitHub summary
+        if: always()
+        run: |
+          cat test_outputs/COMPREHENSIVE_TEST_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload exhaustive test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exhaustive-e2e-test-artifacts
+          path: |
+            test_outputs/
+            ollama.log
+            chroma_data/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Fail workflow if tests failed
+        if: always()
+        run: |
+          code="$(cat test_outputs/test-exit-code.txt || echo 1)"
+          if [ "$code" -ne 0 ]; then
+            echo "Tests failed with exit code: $code"
+            exit "$code"
+          fi
