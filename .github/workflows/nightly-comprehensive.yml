@@ -1,0 +1,282 @@
+name: Nightly Comprehensive Tests
+
+on:
+  schedule:
+    # Run every night at 1 AM UTC
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  full-test-suite:
+    name: Full Test Suite (8-10 hours)
+    runs-on: ubuntu-latest
+    timeout-minutes: 720  # 12 hours max
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run full extreme test suite
+        run: |
+          python -m tests.extreme.runner \
+            --categories all \
+            --verbose \
+            --output-dir test_outputs/nightly \
+            --generate-html-report \
+            --generate-json-report \
+            --generate-junit-xml
+        continue-on-error: true
+      
+      - name: Upload test outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-test-outputs
+          path: test_outputs/nightly/
+          retention-days: 30
+      
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-test-reports
+          path: |
+            test_outputs/nightly/**/*.html
+            test_outputs/nightly/**/*.json
+            test_outputs/nightly/**/*.xml
+          retention-days: 90
+      
+      - name: Upload performance baselines
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-performance-baselines
+          path: test_outputs/baselines/
+          retention-days: 90
+      
+      - name: Check test results
+        if: always()
+        run: |
+          python -c "
+          import json
+          import sys
+          from pathlib import Path
+          
+          report_file = Path('test_outputs/nightly/test_report.json')
+          if report_file.exists():
+              with open(report_file) as f:
+                  report = json.load(f)
+              
+              total = report.get('total_tests', 0)
+              passed = report.get('passed', 0)
+              failed = report.get('failed', 0)
+              
+              print(f'Total tests: {total}')
+              print(f'Passed: {passed}')
+              print(f'Failed: {failed}')
+              
+              if total > 0:
+                  pass_rate = (passed / total) * 100
+                  print(f'Pass rate: {pass_rate:.2f}%')
+                  
+                  # Fail if pass rate is below 80%
+                  if pass_rate < 80:
+                      print('FAIL: Pass rate below 80%')
+                      sys.exit(1)
+              else:
+                  print('WARNING: No tests found')
+          else:
+              print('WARNING: Test report not found')
+          "
+      
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Nightly Comprehensive Tests Failed',
+              body: `The nightly comprehensive test suite has failed.
+              
+              **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              **Commit:** ${{ github.sha }}
+              **Branch:** ${{ github.ref }}
+              
+              Please review the test results and address any failures.`,
+              labels: ['test-failure', 'automated']
+            });
+            console.log('Created issue:', issue.data.number);
+
+  continuous-stress-test:
+    name: 24-Hour Continuous Stress Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 1500  # 25 hours (24h test + buffer)
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run 24-hour continuous test
+        run: |
+          pytest tests/extreme/engines/test_batch_continuous.py::TestContinuousTesting::test_continuous_stress_24_hours \
+            -v \
+            --tb=short \
+            --junit-xml=test-results/continuous-24h.xml
+        continue-on-error: true
+      
+      - name: Upload continuous test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: continuous-24h-results
+          path: |
+            test-results/
+            test_outputs/continuous/
+          retention-days: 90
+      
+      - name: Analyze stability
+        if: always()
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+          
+          stability_file = Path('test_outputs/continuous/stability_report.json')
+          if stability_file.exists():
+              with open(stability_file) as f:
+                  report = json.load(f)
+              
+              print('=== 24-Hour Stability Report ===')
+              print(f'Total operations: {report.get(\"total_operations\", 0)}')
+              print(f'Successful: {report.get(\"successful\", 0)}')
+              print(f'Failed: {report.get(\"failed\", 0)}')
+              print(f'Memory leaks detected: {report.get(\"memory_leaks\", 0)}')
+              print(f'Performance degradation: {report.get(\"performance_degradation\", \"N/A\")}')
+          "
+
+  model-comparison:
+    name: Comparative Model Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    
+    strategy:
+      matrix:
+        model: ['qwen2.5-3b', 'phi-3.5-mini', 'mistral-7b']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run model comparison tests
+        run: |
+          pytest tests/extreme/engines/test_batch_continuous.py::TestComparativeModelTesting \
+            -v \
+            --tb=short \
+            --junit-xml=test-results/model-comparison-${{ matrix.model }}.xml
+        env:
+          TEST_MODEL: ${{ matrix.model }}
+        continue-on-error: true
+      
+      - name: Upload model comparison results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-comparison-${{ matrix.model }}
+          path: |
+            test-results/
+            test_outputs/model_comparison/
+
+  aggregate-nightly-results:
+    name: Aggregate Nightly Results
+    runs-on: ubuntu-latest
+    needs: [full-test-suite, continuous-stress-test, model-comparison]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: nightly-artifacts/
+      
+      - name: Generate summary report
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+          from datetime import datetime
+          
+          print('=== Nightly Test Summary ===')
+          print(f'Date: {datetime.now().isoformat()}')
+          print()
+          
+          artifacts_dir = Path('nightly-artifacts')
+          
+          # Count test result files
+          xml_files = list(artifacts_dir.glob('**/*.xml'))
+          json_files = list(artifacts_dir.glob('**/*.json'))
+          html_files = list(artifacts_dir.glob('**/*.html'))
+          
+          print(f'Test result files: {len(xml_files)}')
+          print(f'JSON reports: {len(json_files)}')
+          print(f'HTML reports: {len(html_files)}')
+          print()
+          
+          # Create summary file
+          summary = {
+              'date': datetime.now().isoformat(),
+              'test_result_files': len(xml_files),
+              'json_reports': len(json_files),
+              'html_reports': len(html_files),
+              'artifacts': [str(p.relative_to(artifacts_dir)) for p in artifacts_dir.rglob('*') if p.is_file()]
+          }
+          
+          with open('nightly-summary.json', 'w') as f:
+              json.dump(summary, f, indent=2)
+          
+          print('Summary saved to nightly-summary.json')
+          "
+      
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-summary
+          path: nightly-summary.json
+          retention-days: 365

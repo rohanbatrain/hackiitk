@@ -1,0 +1,279 @@
+name: Extreme Testing Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run full suite weekly on Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test category to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - fast
+          - stress
+          - chaos
+          - adversarial
+          - boundary
+          - performance
+          - property
+
+jobs:
+  # Fast tests run on every push/PR
+  fast-tests:
+    name: Fast Tests (Property, Boundary, Adversarial)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' && github.event.inputs.test_category != 'stress' && github.event.inputs.test_category != 'chaos' && github.event.inputs.test_category != 'performance'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-timeout
+    
+    - name: Run fast tests
+      timeout-minutes: 30
+      run: |
+        python -m tests.extreme.cli test --fast --verbose --fail-fast
+      continue-on-error: false
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: fast-test-results
+        path: |
+          test_outputs/extreme/*.html
+          test_outputs/extreme/*.json
+          test_outputs/extreme/*.xml
+    
+    - name: Publish test results
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: test_outputs/extreme/*.xml
+        check_name: Fast Test Results
+        comment_mode: off
+
+  # Stress tests run on schedule or manual trigger
+  stress-tests:
+    name: Stress Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_category == 'stress' || github.event.inputs.test_category == 'all'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-timeout
+    
+    - name: Run stress tests
+      timeout-minutes: 120
+      run: |
+        python -m tests.extreme.cli test --category stress --verbose
+      continue-on-error: true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: stress-test-results
+        path: |
+          test_outputs/extreme/*.html
+          test_outputs/extreme/*.json
+          test_outputs/extreme/*.xml
+
+  # Chaos tests run on schedule or manual trigger
+  chaos-tests:
+    name: Chaos Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_category == 'chaos' || github.event.inputs.test_category == 'all'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-timeout
+    
+    - name: Run chaos tests
+      timeout-minutes: 120
+      run: |
+        python -m tests.extreme.cli test --category chaos --verbose
+      continue-on-error: true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: chaos-test-results
+        path: |
+          test_outputs/extreme/*.html
+          test_outputs/extreme/*.json
+          test_outputs/extreme/*.xml
+
+  # Performance tests run on schedule or manual trigger
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_category == 'performance' || github.event.inputs.test_category == 'all'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-timeout
+    
+    - name: Run performance tests
+      timeout-minutes: 120
+      run: |
+        python -m tests.extreme.cli test --category performance --verbose
+      continue-on-error: true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-test-results
+        path: |
+          test_outputs/extreme/*.html
+          test_outputs/extreme/*.json
+          test_outputs/extreme/*.xml
+    
+    - name: Upload performance baselines
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-baselines
+        path: coverage_baselines/*.json
+
+  # Full suite runs on schedule
+  full-suite:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_category == 'all'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-timeout
+    
+    - name: Run full test suite with coverage
+      timeout-minutes: 240
+      run: |
+        python -m tests.extreme.cli test --with-coverage --verbose
+      continue-on-error: true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: full-suite-results
+        path: |
+          test_outputs/extreme/*.html
+          test_outputs/extreme/*.json
+          test_outputs/extreme/*.xml
+    
+    - name: Upload coverage reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: |
+          coverage_reports_demo/*.html
+          coverage_reports_demo/*.json
+    
+    - name: Publish test results
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: test_outputs/extreme/*.xml
+        check_name: Full Suite Test Results
+        comment_mode: off
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const reportPath = 'test_outputs/extreme/test_report.json';
+          
+          if (fs.existsSync(reportPath)) {
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            
+            const body = `## Extreme Test Suite Results
+            
+            **Total Tests:** ${report.total_tests}
+            **Passed:** ✅ ${report.passed}
+            **Failed:** ❌ ${report.failed}
+            **Errors:** ⚠️ ${report.errors}
+            **Duration:** ${Math.round(report.duration_seconds / 60)} minutes
+            
+            **Category Results:**
+            ${Object.entries(report.category_results || {}).map(([cat, res]) => 
+              `- **${cat}:** ${res.passed}/${res.total} passed`
+            ).join('\n')}
+            
+            [View detailed HTML report](../artifacts)
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+          }

@@ -1,0 +1,675 @@
+name: Extreme Testing Suite (Highly Parallel)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run full suite weekly on Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode to run'
+        required: false
+        default: 'fast'
+        type: choice
+        options:
+          - fast
+          - full
+          - stress-only
+          - chaos-only
+          - performance-only
+
+jobs:
+  # Fast tests on every push/PR - runs in parallel
+  fast-property-tests:
+    name: Property Tests
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' || github.event.inputs.test_mode == 'fast'
+    timeout-minutes: 15
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run property tests
+      run: |
+        python -m tests.extreme.cli test --category property --verbose
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: property-test-results
+        path: test_outputs/extreme/*
+
+  fast-boundary-tests:
+    name: Boundary Tests
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' || github.event.inputs.test_mode == 'fast'
+    timeout-minutes: 30
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run boundary tests
+      run: |
+        python -m tests.extreme.cli test --category boundary --verbose
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: boundary-test-results
+        path: test_outputs/extreme/*
+
+  fast-adversarial-tests:
+    name: Adversarial Tests
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' || github.event.inputs.test_mode == 'fast'
+    timeout-minutes: 30
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run adversarial tests
+      run: |
+        python -m tests.extreme.cli test --category adversarial --verbose
+      continue-on-error: true
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: adversarial-test-results
+        path: test_outputs/extreme/*
+
+  # Full suite - highly parallelized by individual test engines
+  stress-maximum-load:
+    name: Stress - Maximum Load
+    runs-on: ubuntu-latest-8-cores
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'stress-only'
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run maximum load tests
+      run: |
+        python -m pytest tests/extreme/engines/test_stress_tester.py::TestStressTester::test_maximum_document_size -v
+        python -m pytest tests/extreme/engines/test_stress_tester.py::TestStressTester::test_reference_catalog_scale -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: stress-maximum-load-results
+        path: test_outputs/extreme/*
+
+  stress-concurrent-operations:
+    name: Stress - Concurrent Operations
+    runs-on: ubuntu-latest-8-cores
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'stress-only'
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run concurrent operation tests
+      run: |
+        python -m pytest tests/extreme/engines/test_stress_tester.py::TestStressTester::test_concurrent_operations -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: stress-concurrent-results
+        path: test_outputs/extreme/*
+
+  stress-resource-leaks:
+    name: Stress - Resource Leak Detection
+    runs-on: ubuntu-latest-8-cores
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'stress-only'
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run resource leak tests
+      run: |
+        python -m pytest tests/extreme/engines/test_stress_tester.py::TestStressTester::test_resource_leaks -v
+        python -m pytest tests/extreme/engines/test_stress_tester.py::TestStressTester::test_breaking_points -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: stress-resource-leak-results
+        path: test_outputs/extreme/*
+
+  chaos-disk-failures:
+    name: Chaos - Disk Failures
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'chaos-only'
+    timeout-minutes: 45
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run disk failure tests
+      run: |
+        python -m pytest tests/extreme/engines/test_chaos_engine.py::TestChaosEngine::test_disk_full -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: chaos-disk-results
+        path: test_outputs/extreme/*
+
+  chaos-memory-exhaustion:
+    name: Chaos - Memory Exhaustion
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'chaos-only'
+    timeout-minutes: 45
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run memory exhaustion tests
+      run: |
+        python -m pytest tests/extreme/engines/test_chaos_engine.py::TestChaosEngine::test_memory_exhaustion -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: chaos-memory-results
+        path: test_outputs/extreme/*
+
+  chaos-model-corruption:
+    name: Chaos - Model Corruption
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'chaos-only'
+    timeout-minutes: 45
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run model corruption tests
+      run: |
+        python -m pytest tests/extreme/engines/test_chaos_engine.py::TestChaosEngine::test_model_corruption -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: chaos-model-results
+        path: test_outputs/extreme/*
+
+  chaos-process-interruption:
+    name: Chaos - Process Interruption
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'chaos-only'
+    timeout-minutes: 45
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run process interruption tests
+      run: |
+        python -m pytest tests/extreme/engines/test_chaos_engine.py::TestChaosEngine::test_process_interruption -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: chaos-interruption-results
+        path: test_outputs/extreme/*
+
+  chaos-permissions-config:
+    name: Chaos - Permissions & Config
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'chaos-only'
+    timeout-minutes: 45
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run permission and config tests
+      run: |
+        python -m pytest tests/extreme/engines/test_chaos_engine.py::TestChaosEngine::test_permission_errors -v
+        python -m pytest tests/extreme/engines/test_chaos_engine.py::TestChaosEngine::test_configuration_chaos -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: chaos-permissions-results
+        path: test_outputs/extreme/*
+
+  chaos-vector-store-corruption:
+    name: Chaos - Vector Store Corruption
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'chaos-only'
+    timeout-minutes: 45
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run vector store corruption tests
+      run: |
+        python -m pytest tests/extreme/engines/test_chaos_engine.py::TestChaosEngine::test_vector_store_corruption -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: chaos-vectorstore-results
+        path: test_outputs/extreme/*
+
+  performance-document-scaling:
+    name: Performance - Document Size Scaling
+    runs-on: ubuntu-latest-8-cores
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run document scaling tests
+      run: |
+        python -m pytest tests/extreme/engines/test_performance_profiler.py::TestPerformanceProfiler::test_document_size_scaling -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-document-results
+        path: test_outputs/extreme/*
+
+  performance-chunk-scaling:
+    name: Performance - Chunk Count Scaling
+    runs-on: ubuntu-latest-8-cores
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run chunk scaling tests
+      run: |
+        python -m pytest tests/extreme/engines/test_performance_profiler.py::TestPerformanceProfiler::test_chunk_count_scaling -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-chunk-results
+        path: test_outputs/extreme/*
+
+  performance-llm-context:
+    name: Performance - LLM Context Scaling
+    runs-on: ubuntu-latest-8-cores
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run LLM context tests
+      run: |
+        python -m pytest tests/extreme/engines/test_performance_profiler.py::TestPerformanceProfiler::test_llm_context_scaling -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-llm-results
+        path: test_outputs/extreme/*
+
+  performance-bottlenecks:
+    name: Performance - Bottleneck Identification
+    runs-on: ubuntu-latest-8-cores
+    if: github.event_name == 'schedule' || github.event.inputs.test_mode == 'full' || github.event.inputs.test_mode == 'performance-only'
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run bottleneck identification
+      run: |
+        python -m pytest tests/extreme/engines/test_performance_profiler.py::TestPerformanceProfiler::test_identify_bottlenecks -v
+        python -m pytest tests/extreme/engines/test_performance_profiler.py::TestPerformanceProfiler::test_establish_baselines -v
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-bottleneck-results
+        path: test_outputs/extreme/*
+    
+    - name: Upload baselines
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-baselines
+        path: coverage_baselines/*.json
+
+  # Aggregate results from all parallel jobs
+  aggregate-results:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+    needs: 
+      - fast-property-tests
+      - fast-boundary-tests
+      - fast-adversarial-tests
+      - stress-maximum-load
+      - stress-concurrent-operations
+      - stress-resource-leaks
+      - chaos-disk-failures
+      - chaos-memory-exhaustion
+      - chaos-model-corruption
+      - chaos-process-interruption
+      - chaos-permissions-config
+      - chaos-vector-store-corruption
+      - performance-document-scaling
+      - performance-chunk-scaling
+      - performance-llm-context
+      - performance-bottlenecks
+    if: always() && (github.event_name == 'schedule' || github.event.inputs.test_mode == 'full')
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: all-test-results
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Aggregate results
+      run: |
+        python -c "
+        import json
+        import os
+        from pathlib import Path
+        
+        all_results = []
+        results_dir = Path('all-test-results')
+        
+        for artifact_dir in results_dir.iterdir():
+            if artifact_dir.is_dir():
+                for json_file in artifact_dir.glob('*.json'):
+                    if 'test_report' in json_file.name:
+                        with open(json_file) as f:
+                            all_results.append(json.load(f))
+        
+        # Aggregate statistics
+        total_tests = sum(r.get('total_tests', 0) for r in all_results)
+        total_passed = sum(r.get('passed', 0) for r in all_results)
+        total_failed = sum(r.get('failed', 0) for r in all_results)
+        total_errors = sum(r.get('errors', 0) for r in all_results)
+        total_duration = sum(r.get('duration_seconds', 0) for r in all_results)
+        
+        aggregated = {
+            'execution_date': max(r.get('execution_date', '') for r in all_results),
+            'total_tests': total_tests,
+            'passed': total_passed,
+            'failed': total_failed,
+            'errors': total_errors,
+            'duration_seconds': total_duration,
+            'pass_rate': (total_passed / total_tests * 100) if total_tests > 0 else 0,
+            'parallel_jobs': len(all_results)
+        }
+        
+        with open('aggregated_results.json', 'w') as f:
+            json.dump(aggregated, f, indent=2)
+        
+        print(f'Aggregated {len(all_results)} test result files')
+        print(f'Total: {total_tests} tests')
+        print(f'Passed: {total_passed} ({aggregated[\"pass_rate\"]:.1f}%)')
+        print(f'Failed: {total_failed}')
+        print(f'Errors: {total_errors}')
+        print(f'Duration: {total_duration/60:.1f} minutes (wall time with parallelization)')
+        "
+    
+    - name: Upload aggregated results
+      uses: actions/upload-artifact@v3
+      with:
+        name: aggregated-test-results
+        path: aggregated_results.json
+    
+    - name: Comment PR with aggregated results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          if (fs.existsSync('aggregated_results.json')) {
+            const results = JSON.parse(fs.readFileSync('aggregated_results.json', 'utf8'));
+            
+            const passIcon = results.pass_rate >= 95 ? '✅' : '⚠️';
+            
+            const body = `## ${passIcon} Extreme Test Suite Results (Highly Parallel)
+            
+            **Execution Mode:** ${results.parallel_jobs} parallel jobs
+            **Total Tests:** ${results.total_tests}
+            **Passed:** ✅ ${results.passed} (${results.pass_rate.toFixed(1)}%)
+            **Failed:** ❌ ${results.failed}
+            **Errors:** ⚠️ ${results.errors}
+            **Wall Time:** ~${Math.round(results.duration_seconds / 60)} minutes
+            
+            ${results.pass_rate >= 95 ? '✅ **SUCCESS CRITERIA MET** (≥95% pass rate)' : '⚠️ **SUCCESS CRITERIA NOT MET** (target: ≥95% pass rate)'}
+            
+            [View detailed results in artifacts](../actions/runs/${context.runId})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+          }
+    
+    - name: Check success criteria
+      run: |
+        python -c "
+        import json
+        import sys
+        
+        with open('aggregated_results.json') as f:
+            results = json.load(f)
+        
+        pass_rate = results['pass_rate']
+        
+        if pass_rate < 95:
+            print(f'❌ FAILED: Pass rate {pass_rate:.1f}% is below 95% threshold')
+            sys.exit(1)
+        else:
+            print(f'✅ SUCCESS: Pass rate {pass_rate:.1f}% meets 95% threshold')
+            sys.exit(0)
+        "

@@ -1,0 +1,326 @@
+name: Extreme Testing Suite (Ultra Parallel - Maximum Speed)
+
+on:
+  schedule:
+    # Run full suite weekly on Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      max_parallel:
+        description: 'Maximum parallel jobs (default: 50)'
+        required: false
+        default: '50'
+        type: string
+
+jobs:
+  # Generate test matrix dynamically
+  generate-matrix:
+    name: Generate Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+    
+    - name: Generate test matrix
+      id: set-matrix
+      run: |
+        python -c "
+        import json
+        import subprocess
+        
+        # Collect all test items
+        result = subprocess.run(
+            ['python', '-m', 'pytest', 'tests/', '--collect-only', '-q'],
+            capture_output=True,
+            text=True
+        )
+        
+        # Parse test items (simplified - you may need to adjust)
+        test_items = []
+        for line in result.stdout.split('\n'):
+            if '::' in line and 'test_' in line:
+                test_items.append(line.strip())
+        
+        # Group tests by category for better organization
+        test_groups = {
+            'property': [],
+            'boundary': [],
+            'adversarial': [],
+            'stress': [],
+            'chaos': [],
+            'performance': [],
+            'unit': [],
+            'integration': []
+        }
+        
+        for item in test_items:
+            for category in test_groups.keys():
+                if category in item.lower():
+                    test_groups[category].append(item)
+                    break
+            else:
+                test_groups['unit'].append(item)
+        
+        # Create matrix entries
+        matrix_entries = []
+        for category, tests in test_groups.items():
+            if tests:
+                # For large test groups, split into chunks
+                chunk_size = 5 if category in ['stress', 'chaos', 'performance'] else 10
+                for i in range(0, len(tests), chunk_size):
+                    chunk = tests[i:i+chunk_size]
+                    matrix_entries.append({
+                        'category': category,
+                        'chunk_id': i // chunk_size,
+                        'tests': chunk,
+                        'timeout': 60 if category in ['stress', 'chaos', 'performance'] else 30
+                    })
+        
+        matrix = {'include': matrix_entries}
+        print(f'Generated {len(matrix_entries)} parallel test jobs')
+        print(json.dumps(matrix, indent=2))
+        
+        # Output for GitHub Actions
+        with open('matrix.json', 'w') as f:
+            json.dump(matrix, f)
+        
+        print(f'::set-output name=matrix::{json.dumps(matrix)}')
+        "
+    
+    - name: Upload matrix
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-matrix
+        path: matrix.json
+
+  # Run tests in ultra-parallel mode
+  run-tests:
+    name: ${{ matrix.category }} - Chunk ${{ matrix.chunk_id }}
+    runs-on: ${{ matrix.category == 'stress' || matrix.category == 'performance' && 'ubuntu-latest-8-cores' || 'ubuntu-latest' }}
+    needs: generate-matrix
+    timeout-minutes: ${{ matrix.timeout }}
+    continue-on-error: true
+    
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(github.event.inputs.max_parallel || '50') }}
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run test chunk
+      run: |
+        echo "Running ${{ matrix.category }} tests - Chunk ${{ matrix.chunk_id }}"
+        echo "Tests: ${{ join(matrix.tests, ' ') }}"
+        
+        # Run each test in the chunk
+        for test in ${{ join(matrix.tests, ' ') }}; do
+          echo "Running: $test"
+          python -m pytest "$test" -v --tb=short || true
+        done
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.category }}-${{ matrix.chunk_id }}
+        path: |
+          test_outputs/extreme/*
+          .pytest_cache/
+
+  # Aggregate all results
+  aggregate-results:
+    name: Aggregate All Test Results
+    runs-on: ubuntu-latest
+    needs: run-tests
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: all-test-results
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Aggregate and analyze results
+      run: |
+        python -c "
+        import json
+        import os
+        from pathlib import Path
+        from datetime import datetime
+        
+        results_dir = Path('all-test-results')
+        
+        # Collect all test results
+        all_results = {
+            'total_tests': 0,
+            'passed': 0,
+            'failed': 0,
+            'errors': 0,
+            'skipped': 0,
+            'duration_seconds': 0,
+            'categories': {},
+            'execution_date': datetime.now().isoformat()
+        }
+        
+        # Parse all result artifacts
+        for artifact_dir in results_dir.iterdir():
+            if artifact_dir.is_dir() and 'test-results-' in artifact_dir.name:
+                # Extract category from artifact name
+                parts = artifact_dir.name.split('-')
+                if len(parts) >= 3:
+                    category = parts[2]
+                    
+                    if category not in all_results['categories']:
+                        all_results['categories'][category] = {
+                            'total': 0,
+                            'passed': 0,
+                            'failed': 0,
+                            'errors': 0
+                        }
+                    
+                    # Look for JSON reports
+                    for json_file in artifact_dir.glob('**/*.json'):
+                        try:
+                            with open(json_file) as f:
+                                data = json.load(f)
+                                
+                            # Aggregate statistics
+                            if 'total_tests' in data:
+                                all_results['total_tests'] += data.get('total_tests', 0)
+                                all_results['passed'] += data.get('passed', 0)
+                                all_results['failed'] += data.get('failed', 0)
+                                all_results['errors'] += data.get('errors', 0)
+                                all_results['skipped'] += data.get('skipped', 0)
+                                all_results['duration_seconds'] += data.get('duration_seconds', 0)
+                                
+                                all_results['categories'][category]['total'] += data.get('total_tests', 0)
+                                all_results['categories'][category]['passed'] += data.get('passed', 0)
+                                all_results['categories'][category]['failed'] += data.get('failed', 0)
+                                all_results['categories'][category]['errors'] += data.get('errors', 0)
+                        except:
+                            pass
+        
+        # Calculate pass rate
+        if all_results['total_tests'] > 0:
+            all_results['pass_rate'] = (all_results['passed'] / all_results['total_tests']) * 100
+        else:
+            all_results['pass_rate'] = 0
+        
+        # Save aggregated results
+        with open('ultra_parallel_results.json', 'w') as f:
+            json.dump(all_results, f, indent=2)
+        
+        # Print summary
+        print('=' * 80)
+        print('ULTRA PARALLEL TEST SUITE RESULTS')
+        print('=' * 80)
+        print(f'Total Tests: {all_results[\"total_tests\"]}')
+        print(f'Passed: {all_results[\"passed\"]} ({all_results[\"pass_rate\"]:.1f}%)')
+        print(f'Failed: {all_results[\"failed\"]}')
+        print(f'Errors: {all_results[\"errors\"]}')
+        print(f'Skipped: {all_results[\"skipped\"]}')
+        print(f'Total Duration: {all_results[\"duration_seconds\"]/60:.1f} minutes')
+        print()
+        print('Category Breakdown:')
+        for cat, stats in all_results['categories'].items():
+            if stats['total'] > 0:
+                cat_pass_rate = (stats['passed'] / stats['total']) * 100
+                print(f'  {cat}: {stats[\"passed\"]}/{stats[\"total\"]} ({cat_pass_rate:.1f}%)')
+        print('=' * 80)
+        
+        # Check success criteria
+        if all_results['pass_rate'] >= 95:
+            print('✅ SUCCESS CRITERIA MET (≥95% pass rate)')
+            exit(0)
+        else:
+            print(f'⚠️ SUCCESS CRITERIA NOT MET ({all_results[\"pass_rate\"]:.1f}% < 95%)')
+            exit(1)
+        "
+    
+    - name: Upload aggregated results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ultra-parallel-aggregated-results
+        path: ultra_parallel_results.json
+    
+    - name: Create summary
+      if: always()
+      run: |
+        python -c "
+        import json
+        
+        with open('ultra_parallel_results.json') as f:
+            results = json.load(f)
+        
+        # Create GitHub Actions summary
+        summary = f'''
+        # 🚀 Ultra Parallel Test Suite Results
+        
+        ## Overall Statistics
+        - **Total Tests:** {results['total_tests']}
+        - **Passed:** ✅ {results['passed']} ({results['pass_rate']:.1f}%)
+        - **Failed:** ❌ {results['failed']}
+        - **Errors:** ⚠️ {results['errors']}
+        - **Skipped:** ⏭️ {results['skipped']}
+        - **Duration:** ⏱️ {results['duration_seconds']/60:.1f} minutes
+        
+        ## Category Results
+        '''
+        
+        for cat, stats in results['categories'].items():
+            if stats['total'] > 0:
+                cat_pass_rate = (stats['passed'] / stats['total']) * 100
+                icon = '✅' if cat_pass_rate >= 95 else '⚠️'
+                summary += f'- {icon} **{cat.upper()}:** {stats[\"passed\"]}/{stats[\"total\"]} ({cat_pass_rate:.1f}%)\n'
+        
+        summary += f'''
+        
+        ## Success Criteria
+        {'✅ **PASSED** - Test suite meets 95% pass rate threshold' if results['pass_rate'] >= 95 else '⚠️ **FAILED** - Test suite below 95% pass rate threshold'}
+        '''
+        
+        with open('GITHUB_STEP_SUMMARY.md', 'w') as f:
+            f.write(summary)
+        
+        print(summary)
+        "
+    
+    - name: Post summary to GitHub
+      if: always()
+      run: |
+        if [ -f GITHUB_STEP_SUMMARY.md ]; then
+          cat GITHUB_STEP_SUMMARY.md >> $GITHUB_STEP_SUMMARY
+        fi
