@@ -12,8 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv package manager (10-100x faster than pip)
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:${PATH}"
+RUN pip install --no-cache-dir uv
 
 # Set working directory
 WORKDIR /app
