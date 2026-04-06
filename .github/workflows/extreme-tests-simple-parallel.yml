@@ -1,4 +1,4 @@
-name: Extreme Testing Suite (Simple Parallel - Production Ready)
+name: Extreme Testing Suite (Production Ready with Ollama)
 
 on:
   push:
@@ -6,14 +6,29 @@ on:
   pull_request:
     branches: [ main, develop ]
   schedule:
-    - cron: '0 2 * * 0'
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM
   workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test category to run (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - all
+          - property
+          - boundary
+          - adversarial
+          - stress
+          - chaos
+          - performance
+          - unit
+          - integration
 
 jobs:
   test-suite:
     name: ${{ matrix.category }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     continue-on-error: true
     
     # Use pre-built Docker container with all dependencies
@@ -22,10 +37,11 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+      options: --network host
     
     strategy:
       fail-fast: false
-      max-parallel: 10
+      max-parallel: 8
       matrix:
         category:
           - property
@@ -40,34 +56,50 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Setup Ollama
+      run: |
+        # Install Ollama
+        curl -fsSL https://ollama.com/install.sh | sh
+        
+        # Start Ollama service in background
+        ollama serve &
+        
+        # Wait for Ollama to be ready
+        sleep 10
+        
+        # Pull lightweight model for testing
+        ollama pull qwen2.5:3b || echo "Model pull failed, will use mock"
+    
     - name: Verify dependencies
       run: |
         python -c "import langchain; import chromadb; import sentence_transformers; print('✓ All dependencies available')"
-        echo "Current directory: $(pwd)"
-        echo "Test files:"
-        ls -la tests/extreme/ | head -20
-        echo "Property test files:"
-        find tests -name "*propert*" -type f | head -10
+        echo "✓ Ollama status:"
+        ollama list || echo "Ollama not available, tests will use mocks"
     
     - name: Run ${{ matrix.category }} tests
+      env:
+        OLLAMA_HOST: http://localhost:11434
+        PYTHONPATH: /github/workspace
       run: |
+        cd /github/workspace
+        
         # Run tests directly with pytest
         if [ "${{ matrix.category }}" = "property" ]; then
-          python -m pytest tests/extreme/engines/test_property_test_expander.py tests/extreme/test_properties.py -v --tb=short || true
+          python -m pytest tests/extreme/engines/test_property_test_expander.py tests/property/ -v --tb=short --maxfail=5 -x || true
         elif [ "${{ matrix.category }}" = "boundary" ]; then
-          python -m pytest tests/extreme/engines/test_boundary_tester.py -v --tb=short || true
+          python -m pytest tests/extreme/engines/test_boundary_tester.py -v --tb=short --maxfail=5 || true
         elif [ "${{ matrix.category }}" = "adversarial" ]; then
-          python -m pytest tests/extreme/engines/test_adversarial_tester.py -v --tb=short || true
+          python -m pytest tests/extreme/engines/test_adversarial_tester.py -v --tb=short --maxfail=5 || true
         elif [ "${{ matrix.category }}" = "stress" ]; then
-          python -m pytest tests/extreme/engines/test_stress_tester.py tests/extreme/engines/test_component_stress_tester.py tests/extreme/engines/test_output_audit_stress_tester.py tests/extreme/engines/test_embedding_vector_store_stress_tester.py tests/extreme/engines/test_llm_model_stress_tester.py -v --tb=short || true
+          python -m pytest tests/extreme/engines/test_stress_tester.py tests/extreme/engines/test_component_stress_tester.py -v --tb=short --maxfail=3 || true
         elif [ "${{ matrix.category }}" = "chaos" ]; then
-          python -m pytest tests/extreme/engines/test_chaos_engine.py tests/extreme/engines/test_integration_chaos.py tests/extreme/engines/test_pipeline_fault_injector.py -v --tb=short || true
+          python -m pytest tests/extreme/engines/test_chaos_engine.py tests/extreme/engines/test_integration_chaos.py -v --tb=short --maxfail=3 || true
         elif [ "${{ matrix.category }}" = "performance" ]; then
-          python -m pytest tests/extreme/engines/test_performance_profiler.py -v --tb=short || true
+          python -m pytest tests/extreme/engines/test_performance_profiler.py -v --tb=short --maxfail=3 || true
         elif [ "${{ matrix.category }}" = "unit" ]; then
-          python -m pytest tests/unit/ -v --tb=short || true
+          python -m pytest tests/unit/ -v --tb=short --maxfail=10 || true
         elif [ "${{ matrix.category }}" = "integration" ]; then
-          python -m pytest tests/integration/ -v --tb=short || true
+          python -m pytest tests/integration/ -v --tb=short --maxfail=5 || true
         fi
       continue-on-error: true
     

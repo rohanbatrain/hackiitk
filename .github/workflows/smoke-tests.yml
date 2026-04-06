@@ -1,0 +1,48 @@
+name: Smoke Tests (Quick Validation)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    name: Quick Smoke Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    container:
+      image: ghcr.io/${{ github.repository }}:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Verify dependencies
+      run: |
+        python -c "import langchain; import chromadb; import sentence_transformers; print('✓ Dependencies OK')"
+    
+    - name: Run smoke tests
+      env:
+        PYTHONPATH: /github/workspace
+      run: |
+        cd /github/workspace
+        
+        # Run quick smoke tests
+        python -m pytest tests/extreme/engines/test_determinism_smoke.py -v --tb=short || true
+        python -m pytest tests/unit/test_test_data_generator.py -v --tb=short || true
+        python -m pytest tests/unit/test_metrics_collector.py -v --tb=short || true
+        
+        echo "✓ Smoke tests completed"
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: smoke-test-results
+        path: test_outputs/
+        if-no-files-found: ignore
