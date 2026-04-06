@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   exhaustive-e2e:
@@ -124,7 +125,7 @@ jobs:
           import os
           import re
           from collections import Counter, defaultdict
-          from datetime import datetime
+          from datetime import datetime, timezone
           from pathlib import Path
 
           out_dir = Path("test_outputs")
@@ -213,7 +214,8 @@ jobs:
           lines = []
           lines.append("# Comprehensive Exhaustive Test Report")
           lines.append("")
-          lines.append(f"- Generated (UTC): {datetime.utcnow().isoformat()}Z")
+          generated_utc = datetime.now(timezone.utc).isoformat()
+          lines.append(f"- Generated (UTC): {generated_utc}")
           lines.append(f"- Workflow status: **{workflow_status}**")
           lines.append("")
           lines.append("## Coverage Overview")
@@ -233,7 +235,15 @@ jobs:
           lines.append("|---|---:|---:|---:|---:|---:|")
           for suite in sorted(by_suite.keys()):
               c = status_by_suite[suite]
-              lines.append(f"| {suite} | {by_suite[suite]} | {c.get('passed',0)} | {c.get('failed',0)} | {c.get('error',0)+c.get('errors',0)} | {c.get('skipped',0)} |")
+              suite_total = by_suite[suite]
+              suite_passed = c.get("passed", 0)
+              suite_failed = c.get("failed", 0)
+              suite_errors = c.get("error", 0) + c.get("errors", 0)
+              suite_skipped = c.get("skipped", 0)
+              lines.append(
+                  f"| {suite} | {suite_total} | {suite_passed} | "
+                  f"{suite_failed} | {suite_errors} | {suite_skipped} |"
+              )
           lines.append("")
           lines.append("## Environment Setup Results")
           lines.append("")
