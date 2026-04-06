@@ -1,4 +1,4 @@
-name: Extreme Testing Suite (Simple Parallel - Production Ready)
+name: Extreme Testing Suite (UV Package Manager)
 
 on:
   push:
@@ -16,13 +16,6 @@ jobs:
     timeout-minutes: 90
     continue-on-error: true
     
-    # Use pre-built Docker container with all dependencies
-    container:
-      image: ghcr.io/${{ github.repository }}:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    
     strategy:
       fail-fast: false
       max-parallel: 10
@@ -39,6 +32,29 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv package manager
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies with uv
+      run: |
+        # Try frozen requirements first (fastest)
+        if uv pip install --system -r requirements-frozen.txt; then
+          echo "✓ Installed from frozen requirements with uv"
+        elif uv pip install --system --constraint constraints.txt -r requirements.txt; then
+          echo "✓ Installed from requirements.txt with constraints using uv"
+        else
+          echo "UV installation failed, falling back to pip"
+          python -m pip install --upgrade pip
+          pip install -r requirements-frozen.txt
+        fi
     
     - name: Verify dependencies
       run: |
@@ -162,7 +178,7 @@ jobs:
             json.dump(all_results, f, indent=2)
         
         print("=" * 80)
-        print("PARALLEL TEST SUITE RESULTS")
+        print("PARALLEL TEST SUITE RESULTS (UV)")
         print("=" * 80)
         pj = all_results["parallel_jobs"]
         tt = all_results["total_tests"]
