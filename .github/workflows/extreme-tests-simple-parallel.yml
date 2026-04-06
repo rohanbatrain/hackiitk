@@ -47,22 +47,12 @@ jobs:
     - name: Run ${{ matrix.category }} tests
       run: |
         # Run tests using the extreme testing CLI
-        if [ "${{ matrix.category }}" = "property" ]; then
-          python -m tests.extreme.cli test --category property --fast || true
-        elif [ "${{ matrix.category }}" = "boundary" ]; then
-          python -m tests.extreme.cli test --category boundary --fast || true
-        elif [ "${{ matrix.category }}" = "adversarial" ]; then
-          python -m tests.extreme.cli test --category adversarial --fast || true
-        elif [ "${{ matrix.category }}" = "stress" ]; then
-          python -m tests.extreme.cli test --category stress --fast || true
-        elif [ "${{ matrix.category }}" = "chaos" ]; then
-          python -m tests.extreme.cli test --category chaos --fast || true
-        elif [ "${{ matrix.category }}" = "performance" ]; then
-          python -m tests.extreme.cli test --category performance --fast || true
-        elif [ "${{ matrix.category }}" = "unit" ]; then
+        if [ "${{ matrix.category }}" = "unit" ]; then
           python -m pytest tests/unit/ -v --tb=short || true
         elif [ "${{ matrix.category }}" = "integration" ]; then
           python -m pytest tests/integration/ -v --tb=short || true
+        else
+          python -m tests.extreme.cli --categories ${{ matrix.category }} --verbose || true
         fi
       continue-on-error: true
     
