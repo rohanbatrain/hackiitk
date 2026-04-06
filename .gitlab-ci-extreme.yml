@@ -1,0 +1,165 @@
+# GitLab CI Configuration for Extreme Testing Suite
+# 
+# This configuration provides:
+# - Fast tests on every push/MR
+# - Full suite on schedule
+# - Manual triggers for specific categories
+# - Artifact collection and reporting
+
+stages:
+  - fast-tests
+  - stress-tests
+  - chaos-tests
+  - performance-tests
+  - full-suite
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHON_VERSION: "3.11"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+.python-setup: &python-setup
+  before_script:
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov pytest-timeout
+
+# Fast tests run on every push/MR
+fast-tests:
+  stage: fast-tests
+  image: python:${PYTHON_VERSION}
+  <<: *python-setup
+  script:
+    - python -m tests.extreme.cli test --fast --verbose --fail-fast
+  timeout: 30m
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/extreme/*.html
+      - test_outputs/extreme/*.json
+      - test_outputs/extreme/*.xml
+    reports:
+      junit: test_outputs/extreme/*.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$TEST_CATEGORY == "fast"'
+
+# Stress tests run on schedule or manual trigger
+stress-tests:
+  stage: stress-tests
+  image: python:${PYTHON_VERSION}
+  <<: *python-setup
+  script:
+    - python -m tests.extreme.cli test --category stress --verbose
+  timeout: 2h
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/extreme/*.html
+      - test_outputs/extreme/*.json
+      - test_outputs/extreme/*.xml
+    reports:
+      junit: test_outputs/extreme/*.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$TEST_CATEGORY == "stress"'
+      when: manual
+    - if: '$TEST_CATEGORY == "all"'
+
+# Chaos tests run on schedule or manual trigger
+chaos-tests:
+  stage: chaos-tests
+  image: python:${PYTHON_VERSION}
+  <<: *python-setup
+  script:
+    - python -m tests.extreme.cli test --category chaos --verbose
+  timeout: 2h
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/extreme/*.html
+      - test_outputs/extreme/*.json
+      - test_outputs/extreme/*.xml
+    reports:
+      junit: test_outputs/extreme/*.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$TEST_CATEGORY == "chaos"'
+      when: manual
+    - if: '$TEST_CATEGORY == "all"'
+
+# Performance tests run on schedule or manual trigger
+performance-tests:
+  stage: performance-tests
+  image: python:${PYTHON_VERSION}
+  <<: *python-setup
+  script:
+    - python -m tests.extreme.cli test --category performance --verbose
+  timeout: 2h
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/extreme/*.html
+      - test_outputs/extreme/*.json
+      - test_outputs/extreme/*.xml
+      - coverage_baselines/*.json
+    reports:
+      junit: test_outputs/extreme/*.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$TEST_CATEGORY == "performance"'
+      when: manual
+    - if: '$TEST_CATEGORY == "all"'
+
+# Full suite runs on schedule
+full-suite:
+  stage: full-suite
+  image: python:${PYTHON_VERSION}
+  <<: *python-setup
+  script:
+    - python -m tests.extreme.cli test --with-coverage --verbose
+  timeout: 4h
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/extreme/*.html
+      - test_outputs/extreme/*.json
+      - test_outputs/extreme/*.xml
+      - coverage_reports_demo/*.html
+      - coverage_reports_demo/*.json
+    reports:
+      junit: test_outputs/extreme/*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage_reports_demo/coverage.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$TEST_CATEGORY == "all"'
+      when: manual
+
+# Generate test data (manual job)
+generate-test-data:
+  stage: .pre
+  image: python:${PYTHON_VERSION}
+  <<: *python-setup
+  script:
+    - python -m tests.extreme.cli generate-data --type policy --count 10 --pages 20
+    - python -m tests.extreme.cli generate-data --type malicious-pdf --count 5 --attack-type javascript
+    - python -m tests.extreme.cli generate-data --type oracle --count 5
+  artifacts:
+    paths:
+      - test_data/
+    expire_in: 1 week
+  rules:
+    - when: manual

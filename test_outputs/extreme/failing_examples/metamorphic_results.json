@@ -1,0 +1,27 @@
+[
+  {
+    "property": "document_extension",
+    "passed": true,
+    "test_cases": 3
+  },
+  {
+    "property": "document_reduction",
+    "passed": true,
+    "test_cases": 3
+  },
+  {
+    "property": "formatting_invariance",
+    "passed": true,
+    "test_cases": 3
+  },
+  {
+    "property": "determinism",
+    "passed": true,
+    "test_cases": 3
+  },
+  {
+    "property": "keyword_addition",
+    "passed": true,
+    "test_cases": 3
+  }
+]

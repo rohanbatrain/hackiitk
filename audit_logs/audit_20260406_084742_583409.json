@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-04-06T08:47:42.583409",
+  "input_file_path": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmp388cecpf/adversarial_tests/chunking_attacks/one_char_paragraphs.md",
+  "input_file_hash": "6208eece9e22d5fc2ff4e0fe2471627eb4892b00c83b8111cb2076721d6aa9f7",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmp388cecpf/adversarial_tests/chunking_attacks/output_one_char/one_char_paragraphs_20260406_084742",
+  "analysis_duration_seconds": 914.4386868476868
+}

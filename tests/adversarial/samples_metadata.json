@@ -1,0 +1,36 @@
+{
+  "total_samples": 24,
+  "attack_types": {
+    "javascript": 5,
+    "malformed": 5,
+    "recursive": 5,
+    "large_object": 5,
+    "mixed": 4
+  },
+  "samples": [
+    "malicious_001_javascript.pdf",
+    "malicious_002_javascript.pdf",
+    "malicious_003_javascript.pdf",
+    "malicious_004_javascript.pdf",
+    "malicious_005_javascript.pdf",
+    "malicious_006_malformed.pdf",
+    "malicious_007_malformed.pdf",
+    "malicious_008_malformed.pdf",
+    "malicious_009_malformed.pdf",
+    "malicious_010_malformed.pdf",
+    "malicious_011_recursive.pdf",
+    "malicious_012_recursive.pdf",
+    "malicious_013_recursive.pdf",
+    "malicious_014_recursive.pdf",
+    "malicious_015_recursive.pdf",
+    "malicious_016_large_object.pdf",
+    "malicious_017_large_object.pdf",
+    "malicious_018_large_object.pdf",
+    "malicious_019_large_object.pdf",
+    "malicious_020_large_object.pdf",
+    "malicious_021_mixed.pdf",
+    "malicious_022_mixed.pdf",
+    "malicious_023_mixed.pdf",
+    "malicious_024_mixed.pdf"
+  ]
+}

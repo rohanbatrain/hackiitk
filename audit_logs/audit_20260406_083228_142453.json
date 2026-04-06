@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-04-06T08:32:28.142453",
+  "input_file_path": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmp388cecpf/adversarial_tests/chunking_attacks/split_csf_references.md",
+  "input_file_hash": "86fe8eceb05ea7e8a71e10f42baed438228eda47ab2093b0b9b62a2fd0605d41",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmp388cecpf/adversarial_tests/chunking_attacks/output_split_csf/split_csf_references_20260406_083228",
+  "analysis_duration_seconds": 515.038941860199
+}

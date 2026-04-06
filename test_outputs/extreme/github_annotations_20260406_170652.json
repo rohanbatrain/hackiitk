@@ -1,0 +1,85 @@
+{
+  "annotations": [
+    {
+      "path": "tests/extreme/engines/adversarial_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "failure",
+      "message": "adversarial_9.2_buffer_overflow: Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` ",
+      "title": "FAIL: adversarial_9.2_buffer_overflow",
+      "raw_details": "Test ID: adversarial_9.2_buffer_overflow\nCategory: adversarial\nRequirement: 9.1,9.2,9.3,9.4,9.5\nStatus: fail\nDuration: 0.00s\nError: Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` \n"
+    },
+    {
+      "path": "tests/extreme/engines/adversarial_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "failure",
+      "message": "adversarial_9.6_chunking_boundary_attacks: Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` ",
+      "title": "FAIL: adversarial_9.6_chunking_boundary_attacks",
+      "raw_details": "Test ID: adversarial_9.6_chunking_boundary_attacks\nCategory: adversarial\nRequirement: 43.1,43.2,43.3,43.4,43.5\nStatus: fail\nDuration: 0.00s\nError: Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` \n"
+    },
+    {
+      "path": "tests/extreme/engines/adversarial_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "error",
+      "message": "adversarial.test_data_generator: TypeError: 'TestDataGenerator' object is not callable",
+      "title": "ERROR: adversarial.test_data_generator",
+      "raw_details": "Test ID: adversarial.test_data_generator\nCategory: adversarial\nRequirement: \nStatus: error\nDuration: 0.00s\nError: TypeError: 'TestDataGenerator' object is not callable\n"
+    },
+    {
+      "path": "tests/extreme/engines/adversarial_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "failure",
+      "message": "adversarial_9.3_encoding_attacks: Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` ",
+      "title": "FAIL: adversarial_9.3_encoding_attacks",
+      "raw_details": "Test ID: adversarial_9.3_encoding_attacks\nCategory: adversarial\nRequirement: 10.1,10.2,10.3,10.4,10.5,10.6,10.7,10.8\nStatus: fail\nDuration: 0.00s\nError: Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` \n"
+    },
+    {
+      "path": "tests/extreme/engines/adversarial_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "failure",
+      "message": "adversarial_9.1_malicious_pdfs: 'duration'",
+      "title": "FAIL: adversarial_9.1_malicious_pdfs",
+      "raw_details": "Test ID: adversarial_9.1_malicious_pdfs\nCategory: adversarial\nRequirement: 8.1,8.2,8.3,8.4,8.5\nStatus: fail\nDuration: 0.00s\nError: 'duration'\n"
+    },
+    {
+      "path": "tests/extreme/engines/adversarial_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "failure",
+      "message": "adversarial_9.4_path_traversal: 'duration'",
+      "title": "FAIL: adversarial_9.4_path_traversal",
+      "raw_details": "Test ID: adversarial_9.4_path_traversal\nCategory: adversarial\nRequirement: 11.1,11.2,11.3,11.4,11.5\nStatus: fail\nDuration: 0.00s\nError: 'duration'\n"
+    },
+    {
+      "path": "tests/extreme/engines/adversarial_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "failure",
+      "message": "adversarial_9.5_prompt_injection: 'duration'",
+      "title": "FAIL: adversarial_9.5_prompt_injection",
+      "raw_details": "Test ID: adversarial_9.5_prompt_injection\nCategory: adversarial\nRequirement: 12.1,12.2,12.3,12.4,12.5,42.1,42.2,42.3,42.4,42.5\nStatus: fail\nDuration: 0.00s\nError: 'duration'\n"
+    },
+    {
+      "path": "tests/extreme/engines/boundary_tester.py",
+      "start_line": 1,
+      "end_line": 1,
+      "annotation_level": "error",
+      "message": "boundary.test_data_generator: TypeError: 'TestDataGenerator' object is not callable",
+      "title": "ERROR: boundary.test_data_generator",
+      "raw_details": "Test ID: boundary.test_data_generator\nCategory: boundary\nRequirement: \nStatus: error\nDuration: 0.00s\nError: TypeError: 'TestDataGenerator' object is not callable\n"
+    }
+  ],
+  "summary": {
+    "total_tests": 17,
+    "passed": 9,
+    "failed": 6,
+    "errors": 2,
+    "skipped": 0,
+    "pass_rate": 52.94117647058824,
+    "duration_seconds": 1479.4291322231293
+  }
+}

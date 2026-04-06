@@ -1,0 +1,27 @@
+[
+  {
+    "case": 0,
+    "input_length": 0,
+    "passed": true
+  },
+  {
+    "case": 1,
+    "input_length": 1000,
+    "passed": true
+  },
+  {
+    "case": 2,
+    "input_length": 100000,
+    "passed": true
+  },
+  {
+    "case": 3,
+    "input_length": 1000,
+    "passed": true
+  },
+  {
+    "case": 4,
+    "input_length": 10002,
+    "passed": true
+  }
+]

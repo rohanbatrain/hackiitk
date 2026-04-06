@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Extreme Testing Report - 2026-04-06 17:06:52</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 20px;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .metric {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .metric.failed {
+            border-left-color: #f44336;
+        }
+        .metric.skipped {
+            border-left-color: #ff9800;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+        .pass-rate {
+            font-size: 48px;
+            font-weight: bold;
+            color: #f44336;
+            text-align: center;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status-pass {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .status-fail {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .status-skip {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #9c27b0;
+            font-weight: bold;
+        }
+        .failure-mode {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .failure-mode-title {
+            font-weight: bold;
+            color: #e65100;
+            margin-bottom: 5px;
+        }
+        .failure-mode-content {
+            margin-left: 10px;
+        }
+        .breaking-point {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .baseline {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .requirement-pass {
+            background-color: #e8f5e9;
+        }
+        .requirement-fail {
+            background-color: #ffebee;
+        }
+        .toc {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .toc a {
+            color: #1976D2;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Extreme Testing Framework - Comprehensive Test Report</h1>
+        <p><strong>Execution Date:</strong> 2026-04-06 17:06:52</p>
+        <p><strong>Duration:</strong> 1479.43 seconds (24.7 minutes)</p>
+        
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#executive-summary">Executive Summary</a></li>
+                <li><a href="#category-results">Category Results</a></li>
+                <li><a href="#requirement-coverage">Requirement Coverage</a></li>
+                <li><a href="#breaking-points">Breaking Points</a></li>
+                <li><a href="#failure-modes">Failure Modes</a></li>
+                <li><a href="#performance-baselines">Performance Baselines</a></li>
+                <li><a href="#artifacts">Artifacts</a></li>
+            </ul>
+        </div>
+        
+        <div class="pass-rate">52.9% Pass Rate</div>
+        
+        <h2 id="executive-summary">Executive Summary</h2>
+        <div class="summary">
+            <div class="metric">
+                <div class="metric-label">Total Tests</div>
+                <div class="metric-value">17</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Passed</div>
+                <div class="metric-value">9</div>
+            </div>
+            <div class="metric failed">
+                <div class="metric-label">Failed</div>
+                <div class="metric-value">6</div>
+            </div>
+            <div class="metric skipped">
+                <div class="metric-label">Skipped</div>
+                <div class="metric-value">0</div>
+            </div>
+            <div class="metric failed">
+                <div class="metric-label">Errors</div>
+                <div class="metric-value">2</div>
+            </div>
+        </div>
+        
+        <h2 id="category-results">Category Results</h2>
+        <p>Results organized by test category (stress, chaos, adversarial, boundary, performance).</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Total</th>
+                    <th>Passed</th>
+                    <th>Failed</th>
+                    <th>Skipped</th>
+                    <th>Errors</th>
+                    <th>Duration (s)</th>
+                    <th>Pass Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td><strong>adversarial</strong></td>
+                    <td>7</td>
+                    <td class="status-pass">0</td>
+                    <td class="status-fail">6</td>
+                    <td class="status-skip">0</td>
+                    <td class="status-error">1</td>
+                    <td>1042.59</td>
+                    <td>0.0%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>boundary</strong></td>
+                    <td>7</td>
+                    <td class="status-pass">6</td>
+                    <td class="status-fail">0</td>
+                    <td class="status-skip">0</td>
+                    <td class="status-error">1</td>
+                    <td>433.39</td>
+                    <td>85.7%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>property</strong></td>
+                    <td>3</td>
+                    <td class="status-pass">3</td>
+                    <td class="status-fail">0</td>
+                    <td class="status-skip">0</td>
+                    <td class="status-error">0</td>
+                    <td>0.00</td>
+                    <td>100.0%</td>
+                </tr>
+
+            </tbody>
+        </table>
+        
+        <h2 id="requirement-coverage">Requirement Coverage</h2>
+        <p>Pass/fail status for each of the 80 requirements.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Requirement ID</th>
+                    <th>Total Tests</th>
+                    <th>Passed</th>
+                    <th>Failed</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr class="requirement-fail">
+                    <td><strong>10.1,10.2,10.3,10.4,10.5,10.6,10.7,10.8</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">0</td>
+                    <td class="status-fail">1</td>
+                    <td class="status-fail">FAIL</td>
+                </tr>
+
+                <tr class="requirement-fail">
+                    <td><strong>11.1,11.2,11.3,11.4,11.5</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">0</td>
+                    <td class="status-fail">1</td>
+                    <td class="status-fail">FAIL</td>
+                </tr>
+
+                <tr class="requirement-fail">
+                    <td><strong>12.1,12.2,12.3,12.4,12.5,42.1,42.2,42.3,42.4,42.5</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">0</td>
+                    <td class="status-fail">1</td>
+                    <td class="status-fail">FAIL</td>
+                </tr>
+
+                <tr class="requirement-pass">
+                    <td><strong>17.3,70.1,70.2,70.3,70.4,70.5,70.6</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">1</td>
+                    <td class="status-fail">0</td>
+                    <td class="status-pass">PASS</td>
+                </tr>
+
+                <tr class="requirement-pass">
+                    <td><strong>17.4</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">1</td>
+                    <td class="status-fail">0</td>
+                    <td class="status-pass">PASS</td>
+                </tr>
+
+                <tr class="requirement-pass">
+                    <td><strong>18.1,18.2,18.3,18.4,18.5,18.6</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">1</td>
+                    <td class="status-fail">0</td>
+                    <td class="status-pass">PASS</td>
+                </tr>
+
+                <tr class="requirement-fail">
+                    <td><strong>43.1,43.2,43.3,43.4,43.5</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">0</td>
+                    <td class="status-fail">1</td>
+                    <td class="status-fail">FAIL</td>
+                </tr>
+
+                <tr class="requirement-fail">
+                    <td><strong>8.1,8.2,8.3,8.4,8.5</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">0</td>
+                    <td class="status-fail">1</td>
+                    <td class="status-fail">FAIL</td>
+                </tr>
+
+                <tr class="requirement-fail">
+                    <td><strong>9.1,9.2,9.3,9.4,9.5</strong></td>
+                    <td>1</td>
+                    <td class="status-pass">0</td>
+                    <td class="status-fail">1</td>
+                    <td class="status-fail">FAIL</td>
+                </tr>
+
+            </tbody>
+        </table>
+        
+        <h2 id="breaking-points">Breaking Points</h2>
+        <p>Identified thresholds at which system performance degrades unacceptably or fails.</p>
+<p>No breaking points identified.</p>
+        
+        <h2 id="failure-modes">Failure Modes</h2>
+        <p>Documented failure scenarios with triggers, impacts, and mitigation strategies.</p>
+<p>No failure modes documented.</p>
+        
+        <h2 id="performance-baselines">Performance Baselines</h2>
+        <p>Established performance baselines for regression detection.</p>
+<p>No performance baselines established.</p>
+        
+        <h2 id="artifacts">Artifacts</h2>
+        <p><strong>Artifacts Directory:</strong> test_outputs/extreme</p>
+        <p>Test artifacts including logs, outputs, and generated test data are stored in the artifacts directory.</p>
+        
+        <hr>
+        <p style="text-align: center; color: #666; font-size: 12px;">
+            Generated by Extreme Testing Framework on 2026-04-06 17:06:52
+        </p>
+    </div>
+</body>
+</html>

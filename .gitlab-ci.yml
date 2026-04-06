@@ -1,0 +1,352 @@
+# GitLab CI/CD Configuration for Extreme Testing Framework
+#
+# This configuration provides comprehensive testing across all categories
+# with selective execution support for fast vs full test suites.
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  HYPOTHESIS_PROFILE: "ci"
+  PYTEST_ADDOPTS: "--color=yes"
+
+# Define stages
+stages:
+  - quick-validation
+  - extreme-testing
+  - report
+
+# Cache pip packages
+cache:
+  paths:
+    - .cache/pip
+    - .hypothesis/
+
+# Quick validation tests (runs on every push)
+quick-tests:
+  stage: quick-validation
+  image: python:3.11
+  timeout: 30 minutes
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov hypothesis psutil
+    # Run unit tests (non-slow, non-property)
+    - pytest tests/ -v --tb=short -m "not slow and not property" 
+        --cov=. --cov-report=xml --cov-report=html 
+        --junit-xml=test-results/unit-tests.xml
+    # Run quick property tests (10 examples)
+    - pytest tests/extreme/test_properties.py -v --tb=short 
+        --hypothesis-profile=quick 
+        --junit-xml=test-results/quick-property-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - test-results/
+      - htmlcov/
+      - coverage.xml
+    expire_in: 7 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# Property-based tests (comprehensive)
+property-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 2 hours
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ["3.11", "3.12"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov hypothesis psutil
+    # Run property tests with 1000 examples
+    - pytest tests/extreme/test_properties.py -v --tb=short 
+        --cov=. --cov-report=xml --cov-report=html 
+        --junit-xml=test-results/property-tests-${PYTHON_VERSION}.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - test-results/
+      - htmlcov/
+      - coverage.xml
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Stress tests
+stress-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 3 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run stress tests
+    - pytest tests/extreme/engines/test_stress.py -v --tb=short 
+        --junit-xml=test-results/stress-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+      - test_outputs/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Chaos engineering tests
+chaos-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 3 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run chaos tests
+    - pytest tests/extreme/engines/test_chaos.py -v --tb=short 
+        --junit-xml=test-results/chaos-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+      - test_outputs/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Adversarial security tests
+adversarial-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 2 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run adversarial tests
+    - pytest tests/extreme/engines/test_adversarial.py -v --tb=short 
+        --junit-xml=test-results/adversarial-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+      - test_outputs/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Boundary tests
+boundary-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 2 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run boundary tests
+    - pytest tests/extreme/engines/test_boundary.py -v --tb=short 
+        --junit-xml=test-results/boundary-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+      - test_outputs/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Performance profiling tests
+performance-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 3 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run performance tests
+    - pytest tests/extreme/engines/test_performance.py -v --tb=short 
+        --junit-xml=test-results/performance-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+      - test_outputs/baselines/
+    expire_in: 90 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Component-specific tests
+component-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 3 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run component tests
+    - pytest tests/extreme/engines/test_component_stress.py 
+        tests/extreme/engines/test_output_audit_stress.py 
+        tests/extreme/engines/test_llm_model_stress.py 
+        tests/extreme/engines/test_embedding_vector_stress.py 
+        -v --tb=short 
+        --junit-xml=test-results/component-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+      - test_outputs/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Integration and chaos tests
+integration-tests:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 4 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run integration tests
+    - pytest tests/extreme/engines/test_integration_chaos.py 
+        tests/extreme/engines/test_batch_continuous.py 
+        -v --tb=short 
+        --junit-xml=test-results/integration-tests.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+      - test_outputs/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Generate comprehensive report
+generate-report:
+  stage: report
+  image: python:3.11
+  timeout: 30 minutes
+  dependencies:
+    - property-tests
+    - stress-tests
+    - chaos-tests
+    - adversarial-tests
+    - boundary-tests
+    - performance-tests
+    - component-tests
+    - integration-tests
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Generate comprehensive report from all test results
+    - python -m tests.extreme.cli --categories all --output-dir test_outputs/extreme/
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/extreme/
+      - test-results/
+    expire_in: 90 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  allow_failure: true
+
+# Nightly comprehensive test suite
+nightly-full-suite:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 12 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run full test suite with all categories
+    - python -m tests.extreme.cli --categories all --verbose 
+        --output-dir test_outputs/nightly/
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/nightly/
+      - test-results/
+    expire_in: 90 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  allow_failure: true
+
+# Manual trigger for specific category
+manual-category-test:
+  stage: extreme-testing
+  image: python:3.11
+  timeout: 4 hours
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    # Run specific category (set via CI/CD variable TEST_CATEGORY)
+    - python -m tests.extreme.cli --categories ${TEST_CATEGORY:-stress} 
+        --verbose --output-dir test_outputs/manual/
+  artifacts:
+    when: always
+    paths:
+      - test_outputs/manual/
+      - test-results/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+  allow_failure: true

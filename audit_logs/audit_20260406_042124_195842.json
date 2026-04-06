@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-04-06T04:21:24.195842",
+  "input_file_path": "/private/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/pytest-of-rohan/pytest-0/test_batch_processing_small0/batch_continuous_tests/tmpbg4jmz2f.txt",
+  "input_file_hash": "18f9531a966a587f3b11bdfd7b140e49562b2d46f3cc55b41df22350061afe6d",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "/private/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/pytest-of-rohan/pytest-0/test_batch_processing_small0/batch_continuous_tests/batch_1/tmpbg4jmz2f_20260406_042124",
+  "analysis_duration_seconds": 650.7432968616486
+}

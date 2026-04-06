@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Extreme Testing Framework" tests="17" failures="6" errors="2" skipped="0" time="1479.429">
+  <testsuite name="adversarial" tests="7" failures="6" errors="1" skipped="0" time="1042.595">
+    <testcase name="adversarial_9.2_buffer_overflow" classname="adversarial" time="0.000">
+      <failure message="Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` ">Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` </failure>
+    </testcase>
+    <testcase name="adversarial_9.6_chunking_boundary_attacks" classname="adversarial" time="0.000">
+      <failure message="Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` ">Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` </failure>
+    </testcase>
+    <testcase name="adversarial.test_data_generator" classname="adversarial" time="0.000">
+      <error message="TypeError: &#x27;TestDataGenerator&#x27; object is not callable">TypeError: &#x27;TestDataGenerator&#x27; object is not callable</error>
+    </testcase>
+    <testcase name="adversarial_9.3_encoding_attacks" classname="adversarial" time="0.000">
+      <failure message="Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` ">Analysis pipeline failed: Error in compaction: Error reading from metadata segment reader: error occurred while decoding column 0: mismatched types; Rust type `u64` (as SQL type `INTEGER`) is not compatible with SQL type `BLOB` </failure>
+    </testcase>
+    <testcase name="adversarial_9.1_malicious_pdfs" classname="adversarial" time="0.000">
+      <failure message="&#x27;duration&#x27;">&#x27;duration&#x27;</failure>
+    </testcase>
+    <testcase name="adversarial_9.4_path_traversal" classname="adversarial" time="0.000">
+      <failure message="&#x27;duration&#x27;">&#x27;duration&#x27;</failure>
+    </testcase>
+    <testcase name="adversarial_9.5_prompt_injection" classname="adversarial" time="0.000">
+      <failure message="&#x27;duration&#x27;">&#x27;duration&#x27;</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="boundary" tests="7" failures="0" errors="1" skipped="0" time="433.389">
+    <testcase name="boundary.test_coverage_boundaries" classname="boundary" time="80.951">
+    </testcase>
+    <testcase name="boundary.test_data_generator" classname="boundary" time="0.000">
+      <error message="TypeError: &#x27;TestDataGenerator&#x27; object is not callable">TypeError: &#x27;TestDataGenerator&#x27; object is not callable</error>
+    </testcase>
+    <testcase name="boundary.test_empty_documents" classname="boundary" time="79.315">
+    </testcase>
+    <testcase name="boundary.test_encoding_diversity" classname="boundary" time="137.885">
+    </testcase>
+    <testcase name="boundary.test_extreme_parameters" classname="boundary" time="62.180">
+    </testcase>
+    <testcase name="boundary.test_similarity_score_boundaries" classname="boundary" time="10.969">
+    </testcase>
+    <testcase name="boundary.test_structural_anomalies" classname="boundary" time="62.083">
+    </testcase>
+  </testsuite>
+  <testsuite name="property" tests="3" failures="0" errors="0" skipped="0" time="0.005">
+    <testcase name="invariant_testing" classname="property" time="0.000">
+    </testcase>
+    <testcase name="metamorphic_properties" classname="property" time="0.000">
+    </testcase>
+    <testcase name="round_trip_properties" classname="property" time="0.000">
+    </testcase>
+  </testsuite>
+</testsuites>

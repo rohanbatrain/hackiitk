@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-04-06T16:20:23.934251",
+  "input_file_path": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmp51yxi19u/adversarial_tests/buffer_overflow/long_lines.md",
+  "input_file_hash": "c469d9001efa14957e3ea19068e57f5f5ed3ba0c14432124802378e1364b9520",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmp51yxi19u/adversarial_tests/buffer_overflow/output_long_lines/long_lines_20260406_162023",
+  "analysis_duration_seconds": 539.8924639225006
+}

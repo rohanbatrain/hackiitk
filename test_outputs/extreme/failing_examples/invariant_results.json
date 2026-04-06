@@ -1,0 +1,22 @@
+[
+  {
+    "invariant": "chunk_count_preservation",
+    "passed": true,
+    "test_cases": 3
+  },
+  {
+    "invariant": "gap_coverage_completeness",
+    "passed": true,
+    "test_cases": 3
+  },
+  {
+    "invariant": "audit_log_consistency",
+    "passed": true,
+    "test_cases": 3
+  },
+  {
+    "invariant": "output_file_determinism",
+    "passed": true,
+    "test_cases": 3
+  }
+]

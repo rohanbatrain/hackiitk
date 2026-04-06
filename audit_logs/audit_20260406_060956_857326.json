@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-04-06T06:09:56.857326",
+  "input_file_path": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmpyakr3ron/adversarial_tests/encoding_attacks/unicode_norm.md",
+  "input_file_hash": "0aaf290e6a88a15b59e6921ca42d35308ecd295cf62cfb8582b24201a7b6f982",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmpyakr3ron/adversarial_tests/encoding_attacks/output_unicode_norm/unicode_norm_20260406_060956",
+  "analysis_duration_seconds": 748.8274970054626
+}

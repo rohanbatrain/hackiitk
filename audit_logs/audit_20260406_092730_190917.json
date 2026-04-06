@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-04-06T09:27:30.190917",
+  "input_file_path": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmpe782sxjs/adversarial_tests/encoding_attacks/null_bytes.md",
+  "input_file_hash": "d724a8371b88e02181ef6a36cea9ed2a8e9721bf969202dd31a03269d4644f3f",
+  "model_name": "qwen2.5:3b-instruct",
+  "model_version": "q4_k_m",
+  "embedding_model_version": "all-MiniLM-L6-v2",
+  "configuration_parameters": {
+    "chunk_size": 512,
+    "overlap": 50,
+    "temperature": 0.1,
+    "max_tokens": 512
+  },
+  "retrieval_parameters": {
+    "top_k": 5
+  },
+  "prompt_template_version": "1.0.0",
+  "output_directory": "/var/folders/z7/gvp9sb0j74bb8snxhy0_mvtm0000gn/T/tmpe782sxjs/adversarial_tests/encoding_attacks/output_null_bytes/null_bytes_20260406_092730",
+  "analysis_duration_seconds": 583.8936159610748
+}
