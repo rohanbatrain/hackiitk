@@ -2,6 +2,8 @@
 # Comprehensive test execution script for CI/CD
 # This script ensures proper test discovery and execution
 
+set -e  # Exit on error (but we'll handle errors explicitly)
+
 CATEGORY="${1:-all}"
 OUTPUT_DIR="${2:-test_outputs/extreme}"
 
@@ -9,13 +11,19 @@ echo "=========================================="
 echo "Test Execution Script"
 echo "Category: $CATEGORY"
 echo "Output Directory: $OUTPUT_DIR"
+echo "Working Directory: $(pwd)"
+echo "Python Path: $PYTHONPATH"
 echo "=========================================="
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
-# Set Python path
-export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+# Set Python path to include current directory
+export PYTHONPATH="${PYTHONPATH:+${PYTHONPATH}:}$(pwd)"
+
+# Verify Python and pytest are available
+echo "Python version: $(python --version)"
+echo "Pytest version: $(python -m pytest --version)"
 
 # Function to run tests with proper error handling
 run_test_category() {
@@ -27,24 +35,62 @@ run_test_category() {
     echo "=== Running $category tests ==="
     echo "Test paths: $test_paths"
     
-    # First check if tests can be discovered
-    echo "Discovering tests..."
-    python -m pytest --collect-only $test_paths 2>&1 | head -20
+    # First check if test paths exist
+    for path in $test_paths; do
+        if [ ! -e "$path" ]; then
+            echo "⚠️ Warning: Test path does not exist: $path"
+        else
+            echo "✓ Found test path: $path"
+        fi
+    done
     
-    # Run tests with output capture and continue-on-error
+    # Discover tests first
+    echo ""
+    echo "Discovering tests..."
+    python -m pytest --collect-only $test_paths 2>&1 | tee "$OUTPUT_DIR/discovery_${category}.log" || {
+        echo "⚠️ Test discovery had issues (exit code: $?)"
+    }
+    
+    # Count discovered tests
+    local test_count=$(grep -c "test session starts\|<Module\|<Function" "$OUTPUT_DIR/discovery_${category}.log" 2>/dev/null || echo "0")
+    echo "Discovered approximately $test_count test items"
+    
+    # Run tests with output capture
+    echo ""
+    echo "Running tests..."
     python -m pytest $test_paths \
-        -v --tb=short \
+        -v \
+        --tb=short \
         --continue-on-collection-errors \
         --maxfail=$max_fail \
         --junitxml="$OUTPUT_DIR/junit_${category}.xml" \
         --json-report \
         --json-report-file="$OUTPUT_DIR/report_${category}.json" \
-        2>&1 || {
-            echo "⚠️ Tests failed or had errors (exit code: $?)"
-            return 0  # Don't fail the script
+        2>&1 | tee "$OUTPUT_DIR/output_${category}.log" || {
+            local exit_code=$?
+            echo "⚠️ Tests completed with exit code: $exit_code"
+            # Don't fail the script - we want to collect results even if tests fail
         }
     
     echo "✓ $category tests completed"
+    
+    # Show summary if JSON report exists
+    if [ -f "$OUTPUT_DIR/report_${category}.json" ]; then
+        echo "Test results saved to: $OUTPUT_DIR/report_${category}.json"
+        python -c "
+import json
+try:
+    with open('$OUTPUT_DIR/report_${category}.json') as f:
+        data = json.load(f)
+    summary = data.get('summary', {})
+    print(f\"  Total: {summary.get('total', 0)}\")
+    print(f\"  Passed: {summary.get('passed', 0)}\")
+    print(f\"  Failed: {summary.get('failed', 0)}\")
+    print(f\"  Errors: {summary.get('error', 0)}\")
+except Exception as e:
+    print(f'Could not parse results: {e}')
+" 2>/dev/null || echo "  (Could not parse JSON results)"
+    fi
 }
 
 # Execute tests based on category
@@ -100,3 +146,5 @@ ls -lh "$OUTPUT_DIR/" 2>/dev/null || echo "No outputs generated"
 
 echo ""
 echo "✓ Test execution script completed"
+exit 0  # Always exit successfully so workflow can collect artifacts
+

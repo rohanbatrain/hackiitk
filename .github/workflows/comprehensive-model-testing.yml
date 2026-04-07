@@ -29,10 +29,10 @@ jobs:
       matrix:
         # Test with multiple Ollama models (max 7B as requested)
         model:
-          - qwen2.5:3b
+          - qwen2.5:3b-instruct
+          - phi3.5:3.8b
           - gemma2:2b
           - llama3.2:3b
-          - phi3.5:3.8b
         
         # All test categories
         category:
@@ -45,21 +45,19 @@ jobs:
           - unit
           - integration
     
-    # Use pre-built Docker container with all dependencies
-    container:
-      image: ghcr.io/${{ github.repository }}:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
     
     - name: Cache pip packages
       uses: actions/cache@v4
       with:
         path: ~/.cache/pip
-        key: pip-${{ hashFiles('requirements.txt') }}
+        key: pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('constraints.txt') }}
         restore-keys: |
           pip-
     
@@ -71,6 +69,11 @@ jobs:
         restore-keys: |
           hypothesis-${{ matrix.model }}-
           hypothesis-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -c constraints.txt
     
     - name: Setup Ollama
       run: |
@@ -110,12 +113,10 @@ jobs:
     - name: Run ${{ matrix.category }} tests with ${{ matrix.model }}
       env:
         OLLAMA_HOST: http://localhost:11434
-        PYTHONPATH: /github/workspace
+        PYTHONPATH: ${{ github.workspace }}
         LLM_MODEL: ${{ matrix.model }}
         TEST_MODEL: ${{ matrix.model }}
       run: |
-        cd /github/workspace
-        
         # Make script executable
         chmod +x .github/scripts/run_tests.sh
         

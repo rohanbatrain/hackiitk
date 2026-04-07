@@ -163,22 +163,22 @@ This implementation plan creates a production-ready GitHub Actions workflow that
   - Ensure all tests pass, ask the user if questions arise
 
 - [ ] 10. Add integration tests for complete workflow
-  - [~] 10.1 Test workflow with all categories
+  - [ ] 10.1 Test workflow with all categories
     - Trigger workflow and verify all 8 jobs execute
     - Validate aggregated results match individual results
     - _Requirements: 1.1, 1.3, 1.4_
 
-  - [~] 10.2 Test workflow with specific category
+  - [ ] 10.2 Test workflow with specific category
     - Trigger workflow with manual dispatch for single category
     - Verify only selected category executes
     - _Requirements: 8.5_
 
-  - [~] 10.3 Test cache behavior
+  - [ ] 10.3 Test cache behavior
     - Run workflow twice and verify cache hit on second run
     - Modify requirements.txt and verify cache invalidation
     - _Requirements: 2.4, 2.5_
 
-  - [~] 10.4 Test error resilience
+  - [ ] 10.4 Test error resilience
     - Simulate test failures and verify workflow continues
     - Verify aggregation runs even with all failures
     - _Requirements: 10.1, 10.5_

@@ -85,3 +85,25 @@ reference_catalog.json
 
 # Audit Logs (sensitive)
 audit.log
+
+# Test outputs
+test_outputs/
+comprehensive_test_*/
+test_gap_detection_*/
+*.log
+
+# Audit logs
+audit_logs/
+
+# Coverage reports
+coverage_reports_*/
+coverage_baselines/
+
+# Hypothesis cache
+.hypothesis/
+
+# macOS
+.DS_Store
+
+# Outputs
+outputs/
