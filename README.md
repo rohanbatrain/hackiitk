@@ -45,6 +45,34 @@ pytest tests/ -v
 python -m tests.extreme.cli --category stress
 ```
 
+## 📦 Automated Cross-Platform Releases
+
+This repository now includes an automated GitHub release workflow at:
+
+`/.github/workflows/release.yml`
+
+### What it does
+- Builds release artifacts on **Linux**, **macOS**, and **Windows**
+- Runs release-focused validation for:
+  - install flow
+  - startup and CLI behavior
+  - update/reinstall flow
+  - uninstall flow
+- Builds Python distribution artifacts (`sdist` + `wheel`)
+- Builds standalone executables using PyInstaller
+- Publishes all artifacts plus SHA256 checksums to GitHub Releases
+
+### How to trigger
+- Automatic: push a semantic version tag, e.g. `v1.2.3`
+- Manual: run the **Cross-Platform Release** workflow with `release_tag`
+
+### Included release artifacts
+- Source distribution (`.tar.gz`)
+- Wheel (`.whl`)
+- Linux standalone bundle (`.tar.gz`)
+- macOS standalone bundle (`.tar.gz`)
+- Windows standalone bundle (`.zip`)
+
 ## 🏗️ Architecture
 
 ```

@@ -1,0 +1,168 @@
+name: Cross-Platform Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (for example: v1.2.3)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-package:
+    name: Build/Test/Package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies and tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+          pip install build pyinstaller
+
+      - name: Run focused release validation tests
+        run: |
+          python -m pytest \
+            tests/unit/test_llm_runtime.py \
+            tests/unit/test_test_data_generator.py \
+            tests/unit/test_metrics_collector.py \
+            -q
+
+      - name: Build Python distribution artifacts
+        run: python -m build
+
+      - name: Validate installation/startup/update/uninstall flow
+        run: |
+          python -m venv .venv-release
+
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            VENV_PYTHON=".venv-release/Scripts/python.exe"
+            VENV_PIP=".venv-release/Scripts/pip.exe"
+            VENV_BIN_DIR=".venv-release/Scripts"
+            VENV_CLI=".venv-release/Scripts/policy-analyzer.exe"
+          else
+            VENV_PYTHON=".venv-release/bin/python"
+            VENV_PIP=".venv-release/bin/pip"
+            VENV_BIN_DIR=".venv-release/bin"
+            VENV_CLI=".venv-release/bin/policy-analyzer"
+          fi
+
+          WHEEL_PATH=$(ls dist/*.whl | head -n 1)
+          "$VENV_PIP" install "$WHEEL_PATH"
+
+          "$VENV_CLI" --version
+          "$VENV_CLI" --help >/dev/null
+
+          # Basic core CLI behavior check
+          if "$VENV_CLI" --policy-path does-not-exist.txt > missing-file.log 2>&1; then
+            echo "Expected missing-file invocation to fail"
+            exit 1
+          fi
+          grep -q "Policy file not found" missing-file.log
+
+          # Update flow (force reinstall from built wheel)
+          "$VENV_PIP" install --upgrade --force-reinstall "$WHEEL_PATH"
+          "$VENV_CLI" --version
+
+          # Uninstall flow
+          "$VENV_PIP" uninstall -y offline-policy-gap-analyzer
+          if "$VENV_CLI" --version >/dev/null 2>&1; then
+            echo "CLI still available after uninstall"
+            exit 1
+          fi
+
+      - name: Build standalone executable
+        run: pyinstaller --clean --noconfirm --onefile --name policy-analyzer __main__.py
+
+      - name: Validate standalone startup and core CLI behavior
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            STANDALONE_BIN="dist/policy-analyzer.exe"
+          else
+            STANDALONE_BIN="dist/policy-analyzer"
+          fi
+
+          "$STANDALONE_BIN" --version
+          "$STANDALONE_BIN" --help >/dev/null
+
+          if "$STANDALONE_BIN" --policy-path does-not-exist.txt > standalone-missing-file.log 2>&1; then
+            echo "Expected standalone missing-file invocation to fail"
+            exit 1
+          fi
+          grep -q "Policy file not found" standalone-missing-file.log
+
+      - name: Archive standalone executable (non-Windows)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p release-bundles
+          OS_LOWER=$(echo "$RUNNER_OS" | tr '[:upper:]' '[:lower:]')
+          tar -czf "release-bundles/policy-analyzer-${OS_LOWER}-x64.tar.gz" -C dist policy-analyzer
+
+      - name: Archive standalone executable (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir -p release-bundles
+          powershell -NoLogo -NoProfile -Command "Compress-Archive -Path dist/policy-analyzer.exe -DestinationPath release-bundles/policy-analyzer-windows-x64.zip -Force"
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.os }}
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/policy-analyzer
+            dist/policy-analyzer.exe
+            release-bundles/*
+            missing-file.log
+            standalone-missing-file.log
+          if-no-files-found: ignore
+
+  publish-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-test-package
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Generate checksums
+        run: |
+          find release-assets -type f -print0 | sort -z | xargs -0 sha256sum > release-assets/SHA256SUMS.txt
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          generate_release_notes: true
+          files: |
+            release-assets/**
