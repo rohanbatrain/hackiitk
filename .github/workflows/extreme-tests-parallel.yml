@@ -46,7 +46,7 @@ jobs:
     
     - name: Run property tests
       run: |
-        python -m tests.extreme.cli test --category property --verbose
+        python -m tests.extreme.cli --categories property --verbose
     
     - name: Upload results
       if: always()
@@ -77,7 +77,7 @@ jobs:
     
     - name: Run boundary tests
       run: |
-        python -m tests.extreme.cli test --category boundary --verbose
+        python -m tests.extreme.cli --categories boundary --verbose
     
     - name: Upload results
       if: always()
@@ -108,7 +108,7 @@ jobs:
     
     - name: Run adversarial tests
       run: |
-        python -m tests.extreme.cli test --category adversarial --verbose
+        python -m tests.extreme.cli --categories adversarial --verbose
       continue-on-error: true
     
     - name: Upload results

@@ -35,7 +35,8 @@ jobs:
         
         # First, verify pytest can discover tests
         echo "=== Test Discovery ==="
-        python -m pytest --collect-only tests/unit/ | head -30
+        python -m pytest --collect-only tests/unit/ -q > /tmp/smoke-collect.txt || true
+        head -30 /tmp/smoke-collect.txt
         
         # Run quick smoke tests with output capture
         echo "=== Running Smoke Tests ==="

@@ -30,6 +30,9 @@ jobs:
   fast-tests:
     name: Fast Tests (Property, Boundary, Adversarial)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     if: github.event_name != 'schedule' && github.event.inputs.test_category != 'stress' && github.event.inputs.test_category != 'chaos' && github.event.inputs.test_category != 'performance'
     
     steps:
@@ -50,7 +53,7 @@ jobs:
     - name: Run fast tests
       timeout-minutes: 30
       run: |
-        python -m tests.extreme.cli test --fast --verbose --fail-fast
+        python -m tests.extreme.cli --categories property boundary adversarial --verbose --fail-fast
       continue-on-error: false
     
     - name: Upload test results
@@ -95,7 +98,7 @@ jobs:
     - name: Run stress tests
       timeout-minutes: 120
       run: |
-        python -m tests.extreme.cli test --category stress --verbose
+        python -m tests.extreme.cli --categories stress --verbose
       continue-on-error: true
     
     - name: Upload test results
@@ -132,7 +135,7 @@ jobs:
     - name: Run chaos tests
       timeout-minutes: 120
       run: |
-        python -m tests.extreme.cli test --category chaos --verbose
+        python -m tests.extreme.cli --categories chaos --verbose
       continue-on-error: true
     
     - name: Upload test results
@@ -169,7 +172,7 @@ jobs:
     - name: Run performance tests
       timeout-minutes: 120
       run: |
-        python -m tests.extreme.cli test --category performance --verbose
+        python -m tests.extreme.cli --categories performance --verbose
       continue-on-error: true
     
     - name: Upload test results
@@ -193,6 +196,9 @@ jobs:
   full-suite:
     name: Full Test Suite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     if: github.event_name == 'schedule' || github.event.inputs.test_category == 'all'
     
     steps:
@@ -213,7 +219,7 @@ jobs:
     - name: Run full test suite with coverage
       timeout-minutes: 240
       run: |
-        python -m tests.extreme.cli test --with-coverage --verbose
+        python -m tests.extreme.cli --verbose
       continue-on-error: true
     
     - name: Upload test results
