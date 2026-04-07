@@ -14,7 +14,60 @@ pip install -r requirements.txt
 python -m cli.main analyze path/to/policy.pdf
 ```
 
-## Documentation
+## 📦 Automated Cross-Platform Releases
+
+This repository includes an automated GitHub release workflow at `/.github/workflows/release.yml`
+
+### What it does
+- Builds release artifacts on **Linux**, **macOS**, and **Windows**
+- Runs release-focused validation for install, startup, CLI, update, and uninstall flows
+- Builds Python distribution artifacts (`sdist` + `wheel`)
+- Builds standalone executables using PyInstaller
+- Publishes all artifacts plus SHA256 checksums to GitHub Releases
+
+### How to trigger
+- Automatic: push a semantic version tag, e.g. `v1.2.3`
+- Manual: run the **Cross-Platform Release** workflow with `release_tag`
+
+### Included release artifacts
+- Source distribution (`.tar.gz`)
+- Wheel (`.whl`)
+- Linux standalone bundle (`.tar.gz`)
+- macOS standalone bundle (`.tar.gz`)
+- Windows standalone bundle (`.zip`)
+
+## 🖥️ Electron Desktop Application
+
+A production-oriented Electron desktop application lives in `desktop/` with:
+
+- Secure IPC boundaries (`main` + `preload` + typed contracts)
+- Onboarding, runtime, model management, task execution, and settings screens
+- Local Ollama runtime/process integration and model lifecycle actions
+- Cross-platform installer packaging (`electron-builder`)
+- Release split/assembly tooling to keep every released file below 2 GiB
+
+See:
+- [Desktop README](desktop/README.md)
+- [Desktop Architecture and Operations](docs/ELECTRON_DESKTOP_APP.md)
+
+## 🏗️ Architecture
+
+```
+ingestion/          # Document parsing & chunking
+reference_builder/  # NIST CSF 2.0 catalog
+retrieval/          # Hybrid retrieval (vector + sparse + reranking)
+analysis/           # Gap analysis (Stage A + Stage B)
+revision/           # Policy revision engine
+reporting/          # Output generation & audit logging
+orchestration/      # LangChain pipeline orchestration
+tests/              # Comprehensive test suite
+  ├── unit/         # Unit tests
+  ├── integration/  # Integration tests
+  ├── property/     # Property-based tests
+  └── extreme/      # Stress, chaos, adversarial tests
+```
+
+## 📝 Documentation
 
 - [Setup Guide](docs/guides/SETUP_README.md)
 - [CLI Guide](docs/CLI_GUIDE.md)

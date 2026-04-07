@@ -1,0 +1,46 @@
+appId: com.hackiitk.policyanalyzer.desktop
+productName: Offline Policy Gap Analyzer
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+directories:
+  output: release
+  buildResources: resources
+files:
+  - dist/**
+  - renderer/dist/**
+  - package.json
+extraResources:
+  - from: resources/model-packs
+    to: model-packs
+  - from: resources/ollama
+    to: ollama
+publish:
+  provider: github
+  owner: rohanbatrain
+  repo: hackiitk
+  releaseType: draft
+asar: true
+asarUnpack:
+  - resources/**
+mac:
+  category: public.app-category.productivity
+  target:
+    - dmg
+    - zip
+  hardenedRuntime: true
+  gatekeeperAssess: false
+win:
+  target:
+    - nsis
+    - portable
+  publisherName: Policy Analyzer Team
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Utility
+  maintainer: Policy Analyzer Team
