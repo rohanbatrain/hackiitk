@@ -10,6 +10,9 @@ on:
         required: false
         default: 'qwen2.5:3b,phi3.5:3.8b'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   full-test-suite:
     name: Full Tests - ${{ matrix.model }}

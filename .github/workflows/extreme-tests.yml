@@ -25,6 +25,9 @@ on:
           - performance
           - property
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   # Fast tests run on every push/PR
   fast-tests:

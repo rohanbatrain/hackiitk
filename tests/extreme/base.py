@@ -48,7 +48,8 @@ class BaseTestEngine(ABC):
         requirement_id: str,
         category: str,
         status: TestStatus,
-        duration: float,
+        duration: Optional[float] = None,
+        duration_seconds: Optional[float] = None,
         error_message: Optional[str] = None,
         metrics: Optional[Metrics] = None,
         artifacts: Optional[List[str]] = None
@@ -62,6 +63,7 @@ class BaseTestEngine(ABC):
             category: Test category
             status: Test status
             duration: Test duration in seconds
+            duration_seconds: Optional alias for duration
             error_message: Optional error message
             metrics: Optional performance metrics
             artifacts: Optional list of artifact paths
@@ -74,7 +76,7 @@ class BaseTestEngine(ABC):
             requirement_id=requirement_id,
             category=category,
             status=status,
-            duration_seconds=duration,
+            duration_seconds=duration if duration is not None else (duration_seconds or 0.0),
             error_message=error_message,
             metrics=metrics,
             artifacts=artifacts or []
