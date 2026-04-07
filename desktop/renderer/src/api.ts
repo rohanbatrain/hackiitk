@@ -59,7 +59,7 @@ export const desktopApi: DesktopApi =
         uptimeSeconds: 0,
         memoryMB: 0,
         cpuCount: 0,
-        freeDiskGB: 0,
+        freeMemoryGB: 0,
         errors: ["Desktop API unavailable outside Electron runtime."]
       },
       diagnosticsPath: ""
@@ -72,7 +72,7 @@ export const desktopApi: DesktopApi =
         uptimeSeconds: 0,
         memoryMB: 0,
         cpuCount: 0,
-        freeDiskGB: 0,
+        freeMemoryGB: 0,
         errors: ["Desktop API unavailable outside Electron runtime."]
       }),
     startOllama: () => unavailable(false),

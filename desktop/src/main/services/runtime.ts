@@ -84,7 +84,7 @@ export class OllamaRuntimeService {
     const ollamaRunning = await this.isRunning(settings.ollamaHost);
     const version = ollamaInstalled ? await this.getVersion(settings.ollamaCommand) : undefined;
 
-    const freeDiskGB = Math.max(0, os.freemem() / (1024 ** 3));
+    const freeMemoryGB = Math.max(0, os.freemem() / (1024 ** 3));
 
     return {
       ollamaInstalled,
@@ -94,7 +94,7 @@ export class OllamaRuntimeService {
       uptimeSeconds: Math.floor((Date.now() - this.bootTimestamp) / 1000),
       memoryMB: Math.round(process.memoryUsage().rss / (1024 ** 2)),
       cpuCount: os.cpus().length,
-      freeDiskGB,
+      freeMemoryGB,
       errors: []
     };
   }

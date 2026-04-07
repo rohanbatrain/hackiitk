@@ -19,7 +19,7 @@ export interface RuntimeStatus {
   uptimeSeconds: number;
   memoryMB: number;
   cpuCount: number;
-  freeDiskGB: number;
+  freeMemoryGB: number;
   errors: string[];
 }
 

@@ -42,7 +42,7 @@ const defaultRuntime: RuntimeStatus = {
   uptimeSeconds: 0,
   memoryMB: 0,
   cpuCount: 0,
-  freeDiskGB: 0,
+  freeMemoryGB: 0,
   errors: []
 };
 
@@ -220,7 +220,7 @@ export default function App() {
               <div className="card"><strong>Version</strong><span>{runtimeStatus.ollamaVersion ?? "unknown"}</span></div>
               <div className="card"><strong>Uptime</strong><span>{runtimeStatus.uptimeSeconds}s</span></div>
               <div className="card"><strong>App Memory</strong><span>{runtimeStatus.memoryMB} MB</span></div>
-              <div className="card"><strong>Free RAM</strong><span>{runtimeStatus.freeDiskGB.toFixed(2)} GB</span></div>
+              <div className="card"><strong>Free RAM</strong><span>{runtimeStatus.freeMemoryGB.toFixed(2)} GB</span></div>
             </div>
             <div className="actions">
               <button type="button" onClick={startRuntime}>Start Ollama</button>

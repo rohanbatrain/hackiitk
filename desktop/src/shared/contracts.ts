@@ -28,7 +28,7 @@ export const runtimeStatusSchema = z.object({
   uptimeSeconds: z.number().nonnegative(),
   memoryMB: z.number().nonnegative(),
   cpuCount: z.number().int().positive(),
-  freeDiskGB: z.number().nonnegative(),
+  freeMemoryGB: z.number().nonnegative(),
   errors: z.array(z.string()).default([])
 });
 
