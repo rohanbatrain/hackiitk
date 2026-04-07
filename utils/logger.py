@@ -2,15 +2,19 @@
 Operation logging for the Offline Policy Gap Analyzer.
 
 This module provides structured logging with timestamps, severity levels,
-and component context for all major operations.
+and component context for all major operations. Supports verbose mode for
+in-depth debugging and tracing.
 """
 
 import logging
 import sys
+import traceback
+import functools
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any, Callable
 from datetime import datetime
 import json
+import time
 
 
 # ============================================================================
@@ -31,16 +35,30 @@ LOG_LEVELS = {
 # ============================================================================
 
 class ComponentFormatter(logging.Formatter):
-    """Custom formatter that includes component name and context."""
+    """Custom formatter that includes component name and context with color support."""
     
-    def __init__(self, include_component: bool = True):
+    # ANSI color codes
+    COLORS = {
+        'DEBUG': '\033[36m',      # Cyan
+        'INFO': '\033[32m',       # Green
+        'WARNING': '\033[33m',    # Yellow
+        'ERROR': '\033[31m',      # Red
+        'CRITICAL': '\033[35m',   # Magenta
+        'RESET': '\033[0m'
+    }
+    
+    def __init__(self, include_component: bool = True, use_colors: bool = True, verbose: bool = False):
         """
         Initialize formatter.
         
         Args:
             include_component: Whether to include component name in output
+            use_colors: Whether to use ANSI colors in output
+            verbose: Whether to include verbose details (file, line, function)
         """
         self.include_component = include_component
+        self.use_colors = use_colors and sys.stdout.isatty()
+        self.verbose = verbose
         super().__init__()
     
     def format(self, record: logging.LogRecord) -> str:
@@ -56,22 +74,42 @@ class ComponentFormatter(logging.Formatter):
         timestamp = datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         level = record.levelname
         
+        # Apply color if enabled
+        if self.use_colors:
+            color = self.COLORS.get(level, self.COLORS['RESET'])
+            level_colored = f"{color}{level:8s}{self.COLORS['RESET']}"
+        else:
+            level_colored = f"{level:8s}"
+        
         # Extract component name from logger name
         component = record.name.split('.')[-1] if '.' in record.name else record.name
         
         # Get context if available
         context = getattr(record, 'context', None)
         
+        # Build base message
+        parts = [f"[{timestamp}]", level_colored]
+        
         if self.include_component:
-            if context:
-                return f"[{timestamp}] {level:8s} [{component:20s}] {record.getMessage()} | {context}"
-            else:
-                return f"[{timestamp}] {level:8s} [{component:20s}] {record.getMessage()}"
-        else:
-            if context:
-                return f"[{timestamp}] {level:8s} {record.getMessage()} | {context}"
-            else:
-                return f"[{timestamp}] {level:8s} {record.getMessage()}"
+            parts.append(f"[{component:20s}]")
+        
+        parts.append(record.getMessage())
+        
+        # Add verbose details if enabled
+        if self.verbose:
+            verbose_info = f"({record.filename}:{record.lineno} in {record.funcName})"
+            parts.append(f"\033[90m{verbose_info}\033[0m" if self.use_colors else verbose_info)
+        
+        # Add context if available
+        if context:
+            parts.append(f"| {context}")
+        
+        # Add exception info if present
+        message = " ".join(parts)
+        if record.exc_info and self.verbose:
+            message += "\n" + self.formatException(record.exc_info)
+        
+        return message
 
 
 # ============================================================================
@@ -83,14 +121,16 @@ class OperationLogger:
     Structured logger for Policy Analyzer operations.
     
     Logs all major operations with timestamps, component context,
-    and writes to both console and file.
+    and writes to both console and file. Supports verbose mode for
+    detailed debugging information.
     """
     
     def __init__(
         self,
         output_dir: Optional[Path] = None,
         log_level: str = 'INFO',
-        console_output: bool = True
+        console_output: bool = True,
+        verbose: bool = False
     ):
         """
         Initialize operation logger.
@@ -99,20 +139,35 @@ class OperationLogger:
             output_dir: Directory for log files (None for console only)
             log_level: Minimum log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
             console_output: Whether to output to console
+            verbose: Enable verbose mode with detailed debugging info
         """
         self.output_dir = output_dir
         self.log_level = LOG_LEVELS.get(log_level.upper(), logging.INFO)
         self.console_output = console_output
+        self.verbose = verbose
         self.log_file = None
+        self.verbose_log_file = None
+        
+        # In verbose mode, always use DEBUG level
+        if self.verbose:
+            self.log_level = logging.DEBUG
         
         # Create output directory if specified
         if self.output_dir:
             self.output_dir.mkdir(parents=True, exist_ok=True)
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             self.log_file = self.output_dir / f"analysis_{timestamp}.log"
+            
+            # Create separate verbose log file
+            if self.verbose:
+                self.verbose_log_file = self.output_dir / f"analysis_{timestamp}_verbose.log"
         
         # Configure root logger
         self._configure_logging()
+        
+        if self.verbose:
+            logger = self.get_logger('logger')
+            logger.debug("Verbose logging enabled - detailed debugging information will be captured")
     
     def _configure_logging(self) -> None:
         """Configure logging handlers and formatters."""
@@ -122,22 +177,41 @@ class OperationLogger:
         # Remove existing handlers
         root_logger.handlers.clear()
         
-        # Create formatter
-        formatter = ComponentFormatter(include_component=True)
-        
-        # Console handler
+        # Console handler with colors
         if self.console_output:
+            console_formatter = ComponentFormatter(
+                include_component=True,
+                use_colors=True,
+                verbose=self.verbose
+            )
             console_handler = logging.StreamHandler(sys.stdout)
             console_handler.setLevel(self.log_level)
-            console_handler.setFormatter(formatter)
+            console_handler.setFormatter(console_formatter)
             root_logger.addHandler(console_handler)
         
-        # File handler
+        # Standard file handler (no colors)
         if self.log_file:
+            file_formatter = ComponentFormatter(
+                include_component=True,
+                use_colors=False,
+                verbose=False
+            )
             file_handler = logging.FileHandler(self.log_file, mode='a', encoding='utf-8')
             file_handler.setLevel(self.log_level)
-            file_handler.setFormatter(formatter)
+            file_handler.setFormatter(file_formatter)
             root_logger.addHandler(file_handler)
+        
+        # Verbose file handler with all details
+        if self.verbose_log_file:
+            verbose_formatter = ComponentFormatter(
+                include_component=True,
+                use_colors=False,
+                verbose=True
+            )
+            verbose_handler = logging.FileHandler(self.verbose_log_file, mode='a', encoding='utf-8')
+            verbose_handler.setLevel(logging.DEBUG)
+            verbose_handler.setFormatter(verbose_formatter)
+            root_logger.addHandler(verbose_handler)
     
     def get_logger(self, component_name: str) -> logging.Logger:
         """
@@ -429,6 +503,156 @@ class OperationLogger:
 
 
 # ============================================================================
+# Verbose Mode Decorators
+# ============================================================================
+
+def log_function_call(logger_name: Optional[str] = None):
+    """
+    Decorator to log function entry/exit with arguments and timing.
+    Only active when verbose logging is enabled.
+    
+    Args:
+        logger_name: Optional logger name (defaults to module name)
+    
+    Example:
+        @log_function_call('my_component')
+        def my_function(arg1, arg2):
+            return arg1 + arg2
+    """
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # Get logger
+            component = logger_name or func.__module__.split('.')[-1]
+            logger = get_logger(component)
+            
+            # Only log if DEBUG level is enabled (verbose mode)
+            if not logger.isEnabledFor(logging.DEBUG):
+                return func(*args, **kwargs)
+            
+            # Format arguments for logging
+            args_repr = [repr(a) for a in args[:3]]  # Limit to first 3 args
+            if len(args) > 3:
+                args_repr.append(f"... +{len(args)-3} more")
+            kwargs_repr = [f"{k}={v!r}" for k, v in list(kwargs.items())[:3]]
+            if len(kwargs) > 3:
+                kwargs_repr.append(f"... +{len(kwargs)-3} more")
+            
+            signature = ", ".join(args_repr + kwargs_repr)
+            
+            logger.debug(f"→ Entering {func.__name__}({signature})")
+            
+            start_time = time.time()
+            try:
+                result = func(*args, **kwargs)
+                duration = time.time() - start_time
+                
+                # Format result (truncate if too long)
+                result_repr = repr(result)
+                if len(result_repr) > 100:
+                    result_repr = result_repr[:100] + "..."
+                
+                logger.debug(
+                    f"← Exiting {func.__name__} -> {result_repr} "
+                    f"[{duration*1000:.2f}ms]"
+                )
+                return result
+            except Exception as e:
+                duration = time.time() - start_time
+                logger.debug(
+                    f"✗ Exception in {func.__name__}: {type(e).__name__}: {e} "
+                    f"[{duration*1000:.2f}ms]"
+                )
+                raise
+        
+        return wrapper
+    return decorator
+
+
+def log_performance(operation_name: str, logger_name: Optional[str] = None):
+    """
+    Decorator to log performance metrics for operations.
+    Active in both normal and verbose modes.
+    
+    Args:
+        operation_name: Name of the operation being measured
+        logger_name: Optional logger name (defaults to module name)
+    
+    Example:
+        @log_performance('document_parsing', 'document_parser')
+        def parse_document(path):
+            # ... parsing logic
+            pass
+    """
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            component = logger_name or func.__module__.split('.')[-1]
+            logger = get_logger(component)
+            
+            logger.info(f"Starting {operation_name}...")
+            start_time = time.time()
+            
+            try:
+                result = func(*args, **kwargs)
+                duration = time.time() - start_time
+                logger.info(f"Completed {operation_name} in {duration:.2f}s")
+                return result
+            except Exception as e:
+                duration = time.time() - start_time
+                logger.error(
+                    f"Failed {operation_name} after {duration:.2f}s: {type(e).__name__}: {e}"
+                )
+                raise
+        
+        return wrapper
+    return decorator
+
+
+def log_memory_usage(logger_name: Optional[str] = None):
+    """
+    Decorator to log memory usage before and after function execution.
+    Only active in verbose mode.
+    
+    Args:
+        logger_name: Optional logger name (defaults to module name)
+    """
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            component = logger_name or func.__module__.split('.')[-1]
+            logger = get_logger(component)
+            
+            # Only log if DEBUG level is enabled
+            if not logger.isEnabledFor(logging.DEBUG):
+                return func(*args, **kwargs)
+            
+            try:
+                import psutil
+                process = psutil.Process()
+                
+                mem_before = process.memory_info().rss / 1024 / 1024  # MB
+                logger.debug(f"Memory before {func.__name__}: {mem_before:.2f} MB")
+                
+                result = func(*args, **kwargs)
+                
+                mem_after = process.memory_info().rss / 1024 / 1024  # MB
+                mem_delta = mem_after - mem_before
+                logger.debug(
+                    f"Memory after {func.__name__}: {mem_after:.2f} MB "
+                    f"(Δ {mem_delta:+.2f} MB)"
+                )
+                
+                return result
+            except ImportError:
+                # psutil not available, just run function
+                return func(*args, **kwargs)
+        
+        return wrapper
+    return decorator
+
+
+# ============================================================================
 # Global Logger Instance
 # ============================================================================
 
@@ -438,7 +662,8 @@ _global_logger: Optional[OperationLogger] = None
 def setup_logging(
     output_dir: Optional[Path] = None,
     log_level: str = 'INFO',
-    console_output: bool = True
+    console_output: bool = True,
+    verbose: bool = False
 ) -> OperationLogger:
     """
     Setup global logging configuration.
@@ -447,12 +672,13 @@ def setup_logging(
         output_dir: Directory for log files
         log_level: Minimum log level
         console_output: Whether to output to console
+        verbose: Enable verbose mode with detailed debugging
     
     Returns:
         Configured OperationLogger instance
     """
     global _global_logger
-    _global_logger = OperationLogger(output_dir, log_level, console_output)
+    _global_logger = OperationLogger(output_dir, log_level, console_output, verbose)
     return _global_logger
 
 

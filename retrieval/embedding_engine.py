@@ -9,8 +9,12 @@ without any network calls. Includes caching for repeated operations.
 import os
 import hashlib
 import numpy as np
+import logging
 from typing import List, Union, Dict, Optional
 from sentence_transformers import SentenceTransformer
+from utils.logger import log_function_call, log_performance, log_memory_usage
+
+logger = logging.getLogger(__name__)
 
 
 class EmbeddingEngine:
@@ -28,6 +32,7 @@ class EmbeddingEngine:
         cache_enabled: Whether caching is enabled
     """
     
+    @log_function_call('embedding_engine')
     def __init__(self, model_path: str, enable_cache: bool = True, cache_size: int = 1000):
         """Initialize embedding engine with local model.
         
@@ -40,6 +45,8 @@ class EmbeddingEngine:
             FileNotFoundError: If model path does not exist
             RuntimeError: If model cannot be loaded
         """
+        logger.debug(f"Initializing EmbeddingEngine with model_path={model_path}")
+        
         if not os.path.exists(model_path):
             raise FileNotFoundError(
                 f"Model path not found: {model_path}\n"
@@ -51,8 +58,10 @@ class EmbeddingEngine:
             hf_token = os.environ.get('HF_TOKEN') or os.environ.get('HUGGING_FACE_HUB_TOKEN')
             if hf_token:
                 os.environ['HUGGING_FACE_HUB_TOKEN'] = hf_token
+                logger.debug("HuggingFace token found and set")
             
             # Load model from local path with offline mode
+            logger.debug(f"Loading SentenceTransformer model from {model_path}")
             self.model = SentenceTransformer(model_path, device='cpu')
             self.model_path = model_path
             self.dimensions = 384  # all-MiniLM-L6-v2 produces 384-dim vectors
@@ -62,7 +71,10 @@ class EmbeddingEngine:
             self.cache_size = cache_size
             self.cache: Dict[str, np.ndarray] = {}
             
+            logger.info(f"EmbeddingEngine initialized (cache: {enable_cache}, cache_size: {cache_size})")
+            
         except Exception as e:
+            logger.error(f"Failed to load embedding model: {e}", exc_info=True)
             raise RuntimeError(f"Failed to load embedding model: {e}")
     
     def embed_text(self, text: str, use_cache: bool = True) -> np.ndarray:

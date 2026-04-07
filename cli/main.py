@@ -186,12 +186,14 @@ def run_analysis(
         print(f"   • Low severity gaps: {sum(1 for g in result.gap_report.gaps if g.severity == 'Low')}")
         
         print(f"\n📁 Outputs generated:")
-        print(f"   • Gap analysis report: {result.metadata.get('gap_report_path', 'N/A')}")
-        print(f"   • Revised policy: {result.metadata.get('revised_policy_path', 'N/A')}")
-        print(f"   • Implementation roadmap: {result.metadata.get('roadmap_path', 'N/A')}")
-        print(f"   • Audit log: {result.metadata.get('audit_log_path', 'N/A')}")
+        print(f"   • Output directory: {result.output_directory}")
+        print(f"   • Gap analysis report: {result.output_directory}/gap_analysis_report.json")
+        print(f"   • Gap analysis report (MD): {result.output_directory}/gap_analysis_report.md")
+        print(f"   • Revised policy: {result.output_directory}/revised_policy.md")
+        print(f"   • Implementation roadmap: {result.output_directory}/implementation_roadmap.md")
+        print(f"   • Implementation roadmap (JSON): {result.output_directory}/implementation_roadmap.json")
         
-        print(f"\n⏱️  Analysis duration: {result.metadata.get('duration_seconds', 0):.1f} seconds")
+        print(f"\n⏱️  Analysis duration: {result.duration_seconds:.1f} seconds")
         print()
         
         return 0
@@ -317,9 +319,23 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
     
-    # Set up logging
+    # Set up logging with verbose mode
     log_level = "DEBUG" if args.verbose else "INFO"
-    setup_logging(log_level=log_level)
+    setup_logging(log_level=log_level, verbose=args.verbose)
+    
+    if args.verbose:
+        logger.info("=" * 60)
+        logger.info("VERBOSE MODE ENABLED")
+        logger.info("=" * 60)
+        logger.info("Detailed debugging information will be displayed")
+        logger.info("This includes:")
+        logger.info("  • Function entry/exit traces")
+        logger.info("  • Performance metrics")
+        logger.info("  • Memory usage tracking")
+        logger.info("  • Detailed error stack traces")
+        logger.info("  • Component-level debugging")
+        logger.info("=" * 60)
+        logger.info("")
     
     # Validate inputs
     policy_path = validate_policy_path(args.policy_path)
