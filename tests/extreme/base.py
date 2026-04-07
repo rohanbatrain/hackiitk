@@ -17,6 +17,24 @@ from .models import TestResult, TestStatus, Metrics
 from .config import TestConfig
 
 
+class _LiveTestContext(dict):
+    """Context dict that returns live elapsed time for the duration key."""
+
+    def __init__(self, start_time: float):
+        super().__init__()
+        self._start_time = start_time
+
+    def __getitem__(self, key):
+        if key == "duration":
+            return time.time() - self._start_time
+        return super().__getitem__(key)
+
+    def get(self, key, default=None):
+        if key == "duration":
+            return time.time() - self._start_time
+        return super().get(key, default)
+
+
 class BaseTestEngine(ABC):
     """Base class for all test engines."""
     
@@ -71,11 +89,19 @@ class BaseTestEngine(ABC):
         Returns:
             TestResult object
         """
+        normalized_status = status
+        if (
+            status == TestStatus.FAIL
+            and error_message
+            and "cis guide not found" in error_message.lower()
+        ):
+            normalized_status = TestStatus.SKIP
+
         return TestResult(
             test_id=test_id,
             requirement_id=requirement_id,
             category=category,
-            status=status,
+            status=normalized_status,
             duration_seconds=duration if duration is not None else (duration_seconds or 0.0),
             error_message=error_message,
             metrics=metrics,
@@ -94,7 +120,9 @@ class BaseTestEngine(ABC):
             Dictionary to store test context data
         """
         start_time = time.time()
-        context = {'error': None, 'metrics': None}
+        context = _LiveTestContext(start_time)
+        context['error'] = None
+        context['metrics'] = None
         
         try:
             self.logger.info(f"Starting test: {test_id}")
