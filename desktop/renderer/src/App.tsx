@@ -46,7 +46,7 @@ const defaultRuntime: RuntimeStatus = {
   errors: []
 };
 
-export default function App(): JSX.Element {
+export default function App() {
   const [screen, setScreen] = useState<Screen>("onboarding");
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [appState, setAppState] = useState<AppState>(defaultState);

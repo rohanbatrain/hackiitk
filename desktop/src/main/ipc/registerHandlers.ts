@@ -8,7 +8,7 @@ import {
 } from "../../shared/contracts";
 import type { JsonStore } from "../services/jsonStore";
 import type { AppSettings, AppState } from "../../shared/contracts";
-import type { OllamaRuntimeService } from "../services/runtime";
+import { OllamaRuntimeService } from "../services/runtime";
 import type { ModelService } from "../services/models";
 import type { UpdaterService } from "../services/updater";
 
