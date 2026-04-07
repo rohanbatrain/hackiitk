@@ -97,12 +97,17 @@ class BaseTestEngine(ABC):
         ):
             normalized_status = TestStatus.SKIP
 
+        final_duration = (
+            duration if duration is not None
+            else (duration_seconds if duration_seconds is not None else 0.0)
+        )
+
         return TestResult(
             test_id=test_id,
             requirement_id=requirement_id,
             category=category,
             status=normalized_status,
-            duration_seconds=duration if duration is not None else (duration_seconds or 0.0),
+            duration_seconds=final_duration,
             error_message=error_message,
             metrics=metrics,
             artifacts=artifacts or []
