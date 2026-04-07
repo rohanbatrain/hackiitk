@@ -73,6 +73,20 @@ This repository now includes an automated GitHub release workflow at:
 - macOS standalone bundle (`.tar.gz`)
 - Windows standalone bundle (`.zip`)
 
+## 🖥️ Electron Desktop Application
+
+A production-oriented Electron desktop application now lives in `desktop/` with:
+
+- secure IPC boundaries (`main` + `preload` + typed contracts)
+- onboarding, runtime, model management, task execution, and settings screens
+- local Ollama runtime/process integration and model lifecycle actions
+- cross-platform installer packaging (`electron-builder`)
+- release split/assembly tooling to keep every released file below 2 GiB
+
+See:
+- [Desktop README](desktop/README.md)
+- [Desktop Architecture and Operations](docs/ELECTRON_DESKTOP_APP.md)
+
 ## 🏗️ Architecture
 
 ```
