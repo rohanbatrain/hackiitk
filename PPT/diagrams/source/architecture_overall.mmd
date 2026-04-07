@@ -1,0 +1,17 @@
+flowchart LR
+    U[User/Operator] --> CLI[CLI\ncli/main.py]
+    CLI --> P[AnalysisPipeline\norchestration/analysis_pipeline.py]
+
+    P --> ING[Ingestion Layer\nDocumentParser + TextChunker]
+    P --> REF[Reference Layer\nReferenceCatalog]
+    P --> RET[Retrieval Layer\nEmbeddingEngine + VectorStore + Sparse + Reranker + Hybrid]
+    P --> AN[Analysis Layer\nStage A + Stage B + GapAnalysisEngine]
+    P --> REV[Revision Layer\nPolicyRevisionEngine]
+    P --> REP[Reporting Layer\nGapReport + Roadmap + AuditLogger]
+
+    ING --> AN
+    REF --> RET
+    RET --> AN
+    AN --> REV
+    AN --> REP
+    REV --> REP

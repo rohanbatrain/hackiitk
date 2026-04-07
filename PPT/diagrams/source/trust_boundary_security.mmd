@@ -1,0 +1,8 @@
+flowchart LR
+    U[User] --> IN[Input Policy File]
+    IN --> PARSE[Parser Boundary]
+    PARSE --> PROC[Internal Processing Boundary]
+    PROC --> LLM[Local LLM Boundary]
+    PROC --> STORE[Local Artifact Boundary]
+
+    EXT[Internet] -. not required at runtime .- PROC

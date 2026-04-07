@@ -1,0 +1,51 @@
+flowchart LR
+    subgraph CLI
+      C1[cli/main.py]
+    end
+
+    subgraph Orchestration
+      O1[AnalysisPipeline]
+    end
+
+    subgraph Ingestion
+      I1[DocumentParser]
+      I2[TextChunker]
+    end
+
+    subgraph Retrieval
+      R1[EmbeddingEngine]
+      R2[VectorStore]
+      R3[SparseRetriever]
+      R4[Reranker]
+      R5[HybridRetriever]
+    end
+
+    subgraph Analysis
+      A1[LLMRuntime]
+      A2[StageADetector]
+      A3[StageBReasoner]
+      A4[GapAnalysisEngine]
+      A5[DomainMapper]
+    end
+
+    subgraph Output
+      P1[PolicyRevisionEngine]
+      P2[GapReportGenerator]
+      P3[RoadmapGenerator]
+      P4[AuditLogger]
+    end
+
+    C1 --> O1
+    O1 --> I1 --> I2
+    O1 --> R1 --> R2
+    O1 --> R5
+    R5 --> R3
+    R5 --> R4
+    O1 --> A4
+    A4 --> A2
+    A4 --> A3 --> A1
+    A4 --> A5
+    O1 --> P1
+    O1 --> P2
+    O1 --> P3
+    O1 --> P4

@@ -1,0 +1,7 @@
+flowchart TD
+    A[Install deps\npip install -r requirements.txt] --> B[Install package\npip install -e .]
+    B --> C[Download models\nscripts/setup_models.py]
+    C --> D[Prepare catalog\nreference_catalog.json present]
+    D --> E[Run CLI\npython -m cli.main --policy-path ...]
+    E --> F[Review outputs\nreports, revised policy, roadmap]
+    F --> G[Review audit log]
