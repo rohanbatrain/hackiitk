@@ -17,6 +17,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -48,7 +49,7 @@ jobs:
           type=ref,event=pr
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix={{branch}}-
+          type=sha,prefix=sha-
           type=raw,value=latest,enable={{is_default_branch}}
     
     - name: Build and push Docker image (CI stage)
@@ -56,7 +57,7 @@ jobs:
       with:
         context: .
         target: ci
-        push: true
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
@@ -69,13 +70,14 @@ jobs:
       with:
         context: .
         target: application
-        push: true
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}-full
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
     - name: Test Docker image
+      if: github.event_name != 'pull_request'
       run: |
         docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest python -c "
         import langchain

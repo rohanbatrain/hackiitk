@@ -16,6 +16,9 @@ on:
         default: 'all'
         type: string
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   test-matrix:
     name: ${{ matrix.model }} - ${{ matrix.category }}

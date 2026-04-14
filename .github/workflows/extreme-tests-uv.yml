@@ -9,6 +9,9 @@ on:
     - cron: '0 2 * * 0'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   test-suite:
     name: ${{ matrix.category }}
@@ -64,17 +67,17 @@ jobs:
       run: |
         # Run tests using the extreme testing CLI
         if [ "${{ matrix.category }}" = "property" ]; then
-          python -m tests.extreme.cli test --category property --fast || true
+          python -m tests.extreme.cli --categories property || true
         elif [ "${{ matrix.category }}" = "boundary" ]; then
-          python -m tests.extreme.cli test --category boundary --fast || true
+          python -m tests.extreme.cli --categories boundary || true
         elif [ "${{ matrix.category }}" = "adversarial" ]; then
-          python -m tests.extreme.cli test --category adversarial --fast || true
+          python -m tests.extreme.cli --categories adversarial || true
         elif [ "${{ matrix.category }}" = "stress" ]; then
-          python -m tests.extreme.cli test --category stress --fast || true
+          python -m tests.extreme.cli --categories stress || true
         elif [ "${{ matrix.category }}" = "chaos" ]; then
-          python -m tests.extreme.cli test --category chaos --fast || true
+          python -m tests.extreme.cli --categories chaos || true
         elif [ "${{ matrix.category }}" = "performance" ]; then
-          python -m tests.extreme.cli test --category performance --fast || true
+          python -m tests.extreme.cli --categories performance || true
         elif [ "${{ matrix.category }}" = "unit" ]; then
           python -m pytest tests/unit/ -v --tb=short || true
         elif [ "${{ matrix.category }}" = "integration" ]; then

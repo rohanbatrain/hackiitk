@@ -10,6 +10,9 @@ on:
         required: false
         default: 'qwen2.5:3b,phi3.5:3.8b'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   full-test-suite:
     name: Full Tests - ${{ matrix.model }}
@@ -48,6 +51,11 @@ jobs:
         sleep 15
         ollama pull ${{ matrix.model }}
         ollama list
+
+    - name: Normalize model label
+      id: model_label
+      run: |
+        echo "safe=$(echo '${{ matrix.model }}' | tr ':/' '--')" >> "$GITHUB_OUTPUT"
     
     - name: Run complete test suite
       env:
@@ -88,16 +96,16 @@ jobs:
     - name: Generate test report
       if: always()
       run: |
-        echo "# Test Report for ${{ matrix.model }}" > test_report_${{ matrix.model }}.md
-        echo "Generated at: $(date)" >> test_report_${{ matrix.model }}.md
-        echo "" >> test_report_${{ matrix.model }}.md
-        echo "See artifacts for detailed results" >> test_report_${{ matrix.model }}.md
+        echo "# Test Report for ${{ matrix.model }}" > test_report_${{ steps.model_label.outputs.safe }}.md
+        echo "Generated at: $(date)" >> test_report_${{ steps.model_label.outputs.safe }}.md
+        echo "" >> test_report_${{ steps.model_label.outputs.safe }}.md
+        echo "See artifacts for detailed results" >> test_report_${{ steps.model_label.outputs.safe }}.md
     
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-${{ matrix.model }}
+        name: test-results-${{ steps.model_label.outputs.safe }}
         path: |
           test_outputs/
           test_report_*.md
@@ -108,7 +116,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-${{ matrix.model }}
+        name: coverage-${{ steps.model_label.outputs.safe }}
         path: |
           htmlcov/
           .coverage
