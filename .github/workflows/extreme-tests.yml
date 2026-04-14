@@ -50,7 +50,7 @@ jobs:
     - name: Run fast tests
       timeout-minutes: 30
       run: |
-        python -m tests.extreme.cli test --fast --verbose --fail-fast
+        python -m tests.extreme.cli --categories property boundary adversarial --verbose --fail-fast
       continue-on-error: false
     
     - name: Upload test results
@@ -64,12 +64,13 @@ jobs:
           test_outputs/extreme/*.xml
     
     - name: Publish test results
-      if: always()
+      if: always() && github.event_name != 'pull_request'
       uses: EnricoMi/publish-unit-test-result-action@v2
       with:
         files: test_outputs/extreme/*.xml
         check_name: Fast Test Results
         comment_mode: off
+        comment_on_pr: false
 
   # Stress tests run on schedule or manual trigger
   stress-tests:
@@ -95,7 +96,7 @@ jobs:
     - name: Run stress tests
       timeout-minutes: 120
       run: |
-        python -m tests.extreme.cli test --category stress --verbose
+        python -m tests.extreme.cli --categories stress --verbose
       continue-on-error: true
     
     - name: Upload test results
@@ -132,7 +133,7 @@ jobs:
     - name: Run chaos tests
       timeout-minutes: 120
       run: |
-        python -m tests.extreme.cli test --category chaos --verbose
+        python -m tests.extreme.cli --categories chaos --verbose
       continue-on-error: true
     
     - name: Upload test results
@@ -169,7 +170,7 @@ jobs:
     - name: Run performance tests
       timeout-minutes: 120
       run: |
-        python -m tests.extreme.cli test --category performance --verbose
+        python -m tests.extreme.cli --categories performance --verbose
       continue-on-error: true
     
     - name: Upload test results
@@ -213,7 +214,7 @@ jobs:
     - name: Run full test suite with coverage
       timeout-minutes: 240
       run: |
-        python -m tests.extreme.cli test --with-coverage --verbose
+        python -m tests.extreme.cli --verbose
       continue-on-error: true
     
     - name: Upload test results
@@ -236,12 +237,13 @@ jobs:
           coverage_reports_demo/*.json
     
     - name: Publish test results
-      if: always()
+      if: always() && github.event_name != 'pull_request'
       uses: EnricoMi/publish-unit-test-result-action@v2
       with:
         files: test_outputs/extreme/*.xml
         check_name: Full Suite Test Results
         comment_mode: off
+        comment_on_pr: false
     
     - name: Comment PR with results
       if: github.event_name == 'pull_request' && always()
